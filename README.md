@@ -34,7 +34,7 @@ Agent state (5 fields)
     Angle of hammers (?): 200
     State space = 20*40*15*2*30 = 480k conservatively, can be reduced
     
-    Life (whether agent is living) does not have to be a state, instead it can be incorporated into the reward function.
+Life (whether agent is living) does not have to be a state, instead it can be incorporated into the reward function.
     
 The world state includes more parameters such as:
     Gate positions (vertical spacing, horizontal gap size and positioning)
@@ -44,7 +44,6 @@ The world state includes more parameters such as:
 The reward function is:
     +1 / time step while still alive (instantaneous)
     -1000 for dying
-    
     Max iteration (survive 100 gates) rewards will not be given, since that would poison/skew the Q table.
 
 Other Q learning parameters:
