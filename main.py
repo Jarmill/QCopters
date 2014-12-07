@@ -5,10 +5,14 @@ import tkinter
 import numpy
 import random
 
-SCREEN-WIDTH = 400
-SCREEN-WIDTH = 600
-WORLD = world()
-GAP-WIDTH = 100
+SCREEN_WIDTH = 400
+SCREEN_WIDTH = 600
+WALL_WIDTH = SCREEN_WIDTH
+WALL_HEIGHT = 20
+GAP_WIDTH = 100
+DOWNWARDS_VELOCITY = 1
+FPS = 60.0
+
 #HAMMER-OFFSET = 50
 
 def main(argv=None):
@@ -28,7 +32,7 @@ def main(argv=None):
 
 class world():
     def __init__(self):
-        
+        pass
     def render(self):
         pass
     def moveTick(self):
@@ -51,10 +55,28 @@ class Rectangle(Sprite):
         self.width = width
         self.height = height
         #Tkinter rectangle goes here
+    def render(self):
+        pass
+    def moveDownBy(dist):
+        self.centerY += dist
     
     
 class Flapper(Sprite):
-    #all the aspects of our item
+    def __init__(self):
+        self.accel = 2
+        self.x = SCREEN_WIDTH / 2
+        self.velocity = 0
+    
+    def update(self):
+        self.velocity += self.accel
+        self.x += self.velocity
+
+
+    def flip(self):
+        self.accel = -self.accel
+    
+    def render(self):
+        pass
 
 #class Hammer(Sprite):
     #plus direction swinging
@@ -63,13 +85,16 @@ class Flapper(Sprite):
 class Wall(Sprite):
     def __init__(self, x, y):
         super(Wall, Sprite).__init__()
-        self.leftWall = Rectangle(x - GAP-WIDTH - WALL-WIDTH, y, WALL-WIDTH, WALL-HEIGHT)
-        self.rightWall = Rectangle(x + GAP-WIDTH, y, WALL-WIDTH, WALL-HEIGHT)
+        self.leftWall = Rectangle(x - GAP_WIDTH - WALL_WIDTH, y, WALL_WIDTH, WALL_HEIGHT)
+        self.rightWall = Rectangle(x + GAP_WIDTH, y, WALL_WIDTH, WALL_HEIGHT)
     
-    def render():
+    def render(self):
         self.leftWall.render()
         self.rightWall.render()
-
+    
+    def update(self):
+        self.leftWall.moveDownBy(DOWNWARDS_VELOCITY)
+        self.rightWall.moveDownBy(DOWNWARDS_VELOCITY)
 
 
 if __name__ == "__main__":
