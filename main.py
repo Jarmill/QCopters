@@ -1,7 +1,7 @@
 # Pseudocode for Swing Copters
 # Still missing: exact details of where we actually do the Q-Learning
 # Translation into actual python ongoing
-import tkinter
+from Tkinter import *
 import numpy
 import random
 
@@ -13,39 +13,62 @@ GAP_WIDTH = 100
 DOWNWARDS_VELOCITY = 1
 NUM_WALLS = 8
 FPS = 60.0
+RENDER = True
 
 #HAMMER-OFFSET = 50
 
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv
-    #set the boolean variable RENDER, which has been passed in
-    #set the parameters for various configuration things
-    #make a screen
-    #run loop: (could maybe be broken into its own function)
-        #process input
-        #update locations of Sprites; also their fields
-            #if things go off the bottom of the screen, we make new ones higher up.
-            #check for loss
-        #update weights
-        if render:
-            WORLD.render()
+def main():
+    global W #Tkinter made me do it. :(
+    W = World()
+    if RENDER:
+        root = Tk()
+        root.title("QCopters")
+        root.geometry("400x600")
+        root.title("QCopters")
+        global CANVAS
+        CANVAS = Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, highlightthickness = 0)
+        root.bind("<Button-1>", mousePressed)
+        root.resizable(width=0, height = 0)
+        timerFired()
+        root.mainloop()
+    else:
+        while 1:
+            W.moveTick()
 
-class world():
+def timerFired():
+    print "HI"
+    W.moveTick()
+    W.render()
+    CANVAS.after(700,timerFired)
+
+def mousePressed(CANVAS):
+    print "HI!"
+    W.flapper.flip()
+
+class World(object):
     def __init__(self):
-        pass
+        self.flapper = Flapper()
+        self.walls = [Wall(SCREEN_WIDTH/2, 200+n) for n in [100, 500]]
+        
     def render(self):
-        pass
+        for item in self.walls:
+            item.render()
+            print item.centerX
+            print item.centerY
+        self.flapper.render()
+        
     def moveTick(self):
-        pass
+        self.flapper.moveTick()
+        for item in self.walls:
+            item.moveTick()
 
-class Sprite():
+class Sprite(object):
     def __init__(self, centerX, centerY):
         self.centerX = centerX
         self.centerY = centerY
     def intersectsWith(a_Sprite):
         #return true or false
-        return true
+        pass
     #def getBounds():
     #returns ((x, y), (x, y)) for top left and bottom right corners
 
@@ -55,13 +78,32 @@ class Rectangle(Sprite):
         self.centerY = leftY - (height / 2)
         self.width = width
         self.height = height
-        #Tkinter rectangle goes here
+        
+        
     def render(self):
-        pass
-    def moveDownBy(dist):
+        CANVAS.create_rectangle(self.getTop(), self.getLeftSide(), self.getBottom(), self.getRightSide(), width = 0, fill = "grey80")
+        print "Rendering"
+        
+    def moveDownBy(self, dist):
+        print self.centerY
         self.centerY += dist
-    
-    
+        print self.centerY
+        
+    def getRightSide(self):
+        return self.centerX - self.width/2
+    def getLeftSide(self):
+        return self.centerX + self.width/2
+    def getTop(self):
+        return self.centerY - self.height/2
+    def getBottom(self):
+        return self.centerY + self.height/2
+        
+    def intersectsWith(self, a_Rectangle):
+        return intersects(self.getLeftSide(), self.getRightSide(), a_Rectangle.getLeftSide(), a_Rectangle.getRightSide())
+
+def intersects(a1, a2, b1, b2):
+    return a1 < b1 < a2 or b1 < a1 < b2
+
 class Flapper(Sprite):
     #Put static variables here
     #All knowledge variables (Q matrix, parameters) are static and shared among all Flapper instances
@@ -87,10 +129,9 @@ class Flapper(Sprite):
         self.x = SCREEN_WIDTH / 2
         self.velocity = 0
     
-    def update(self):
+    def moveTick(self):
         self.velocity += self.accel
         self.x += self.velocity
-
 
     def flip(self):
         self.accel = -self.accel
@@ -104,7 +145,8 @@ class Flapper(Sprite):
 
 class Wall(Sprite):
     def __init__(self, x, y):
-        super(Wall, Sprite).__init__()
+        self.centerX = x
+        self.centerY = y
         self.leftWall = Rectangle(x - GAP_WIDTH - WALL_WIDTH, y, WALL_WIDTH, WALL_HEIGHT)
         self.rightWall = Rectangle(x + GAP_WIDTH, y, WALL_WIDTH, WALL_HEIGHT)
     
@@ -112,7 +154,7 @@ class Wall(Sprite):
         self.leftWall.render()
         self.rightWall.render()
     
-    def update(self):
+    def moveTick(self):
         self.leftWall.moveDownBy(DOWNWARDS_VELOCITY)
         self.rightWall.moveDownBy(DOWNWARDS_VELOCITY)
 
