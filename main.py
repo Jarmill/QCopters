@@ -117,21 +117,41 @@ class Flapper(Sprite):
     N_vel_div = 15
     N_x_div = 25
     N_y_div = 10
-    dir_div = np.array([-1, 1])
+    #TODO: figure out a way to incorporate the action with the acceleration
+    dir_div = np.array([-2, 2])
     vel_div = linspace(0.0, 30, N_vel_div)
-    x_div = linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_x_div)
-    y_div = linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_y_div), 
+    h_div = linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
+    v_div = linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_v_div),
     #The actual Q matrix (knowledge base)
-    #Q[direction, velocity, x distance to 
-    Q = np.zeros(N_dir_div, N_vel_div, N_x_div, N_y_div)
+    #Q[direction, velocity, x distance to
+    Q = np.zeros(N_dir_div, N_vel_div, N_h_div, N_v_div)
+    
     def __init__(self):
         self.accel = 2
         self.x = SCREEN_WIDTH / 2
         self.velocity = 0
     
     def moveTick(self):
+        #moveTick is for rendering/interaction with world only
         self.velocity += self.accel
         self.x += self.velocity
+
+    def act(self, near_wall, life):
+        #actual implementation of Q-Learning
+        dir = self.accel
+        dir_index = np.abs(dir_div - dir).argmin()
+        vel = self.velocity
+        vel_index = np.abs(vel_div - vel).argmin()
+        h = self.x - near_wall.gap_center
+        h_index = np.abs(h_div - h).argmin()
+        v = near_wall.gap_height
+        v_index = np.abs(v_div - v).argmin()
+        
+        reward = 1 if life else -1000
+        Q_curr = self.Q[dir_index, vel_index, h_index, v_index)
+        alpha = 0.7 # learning rate
+        lam = 1 #discount rate (permanent memory)
+
 
     def flip(self):
         self.accel = -self.accel
