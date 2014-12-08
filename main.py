@@ -6,11 +6,12 @@ import numpy
 import random
 
 SCREEN_WIDTH = 400
-SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 600
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 20
 GAP_WIDTH = 100
 DOWNWARDS_VELOCITY = 1
+NUM_WALLS = 8
 FPS = 60.0
 
 #HAMMER-OFFSET = 50
@@ -62,6 +63,25 @@ class Rectangle(Sprite):
     
     
 class Flapper(Sprite):
+    #Put static variables here
+    #All knowledge variables (Q matrix, parameters) are static and shared among all Flapper instances
+    #Fields
+    #   Direction: 2
+    #   Velocity: 15
+    #   Vertical Distance: 10
+    #   Horizontal Distance: 20
+    #   State Space: 15*2*25*10 = 7.5k
+    N_dir_div = 2
+    N_vel_div = 15
+    N_x_div = 25
+    N_y_div = 10
+    dir_div = np.array([-1, 1])
+    vel_div = linspace(0.0, 30, N_vel_div)
+    x_div = linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_x_div)
+    y_div = linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_y_div), 
+    #The actual Q matrix (knowledge base)
+    #Q[direction, velocity, x distance to 
+    Q = np.zeros(N_dir_div, N_vel_div, N_x_div, N_y_div)
     def __init__(self):
         self.accel = 2
         self.x = SCREEN_WIDTH / 2
