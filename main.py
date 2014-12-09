@@ -81,7 +81,7 @@ class Rectangle(Sprite):
         
         
     def render(self):
-        CANVAS.create_rectangle(self.getTop(), self.getLeftSide(), self.getBottom(), self.getRightSide(), width = 0, fill = "grey80")
+        CANVAS.create_rectangle(self.getTop(), self.getLeftSide(), self.getBottom(), self.getRightSide(), fill = "grey80")
         print "Rendering"
         
     def moveDownBy(self, dist):
@@ -148,7 +148,7 @@ class Flapper(Sprite):
         v_index = np.abs(v_div - v).argmin()
         
         reward = 1 if life else -1000
-        Q_curr = self.Q[dir_index, vel_index, h_index, v_index)
+        Q_curr = self.Q[dir_index, vel_index, h_index, v_index]
         alpha = 0.7 # learning rate
         lam = 1 #discount rate (permanent memory)
 
