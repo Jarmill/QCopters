@@ -1,6 +1,3 @@
-# Pseudocode for Swing Copters
-# Still missing: exact details of where we actually do the Q-Learning
-# Translation into actual python ongoing
 from Tkinter import *
 import numpy
 import random
@@ -9,7 +6,7 @@ SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 600
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 20
-GAP_WIDTH = 100
+GAP_WIDTH = 200
 DOWNWARDS_VELOCITY = 1
 NUM_WALLS = 8
 FPS = 60.0
@@ -27,6 +24,7 @@ def main():
         root.title("QCopters")
         global CANVAS
         CANVAS = Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, highlightthickness = 0)
+        CANVAS.pack()
         root.bind("<Button-1>", mousePressed)
         root.resizable(width=0, height = 0)
         timerFired()
@@ -36,25 +34,22 @@ def main():
             W.moveTick()
 
 def timerFired():
-    print "HI"
     W.moveTick()
     W.render()
     CANVAS.after(700,timerFired)
 
 def mousePressed(CANVAS):
-    print "HI!"
     W.flapper.flip()
 
 class World(object):
     def __init__(self):
         self.flapper = Flapper()
-        self.walls = [Wall(SCREEN_WIDTH/2, 200+n) for n in [100, 500]]
+        self.walls = [Wall(200, 200)]
+        #self.walls = [Wall(SCREEN_WIDTH/2, 200+n) for n in [100, 500]]
         
     def render(self):
         for item in self.walls:
             item.render()
-            print item.centerX
-            print item.centerY
         self.flapper.render()
         
     def moveTick(self):
@@ -73,33 +68,30 @@ class Sprite(object):
     #returns ((x, y), (x, y)) for top left and bottom right corners
 
 class Rectangle(Sprite):
-    def __init__(self, topX, leftY, width, height):
-        self.centerX = topX - (width / 2)
-        self.centerY = leftY - (height / 2)
+    def __init__(self, centerX, centerY, width, height):
+        self.centerX = centerX
+        self.centerY = centerY
         self.width = width
         self.height = height
         
         
     def render(self):
-        CANVAS.create_rectangle(self.getTop(), self.getLeftSide(), self.getBottom(), self.getRightSide(), fill = "grey80")
-        print "Rendering"
+        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="grey80", width=0)
         
     def moveDownBy(self, dist):
-        print self.centerY
         self.centerY += dist
-        print self.centerY
         
     def getRightSide(self):
-        return self.centerX - self.width/2
-    def getLeftSide(self):
         return self.centerX + self.width/2
+    def getLeftSide(self):
+        return self.centerX - self.width/2
     def getTop(self):
         return self.centerY - self.height/2
     def getBottom(self):
         return self.centerY + self.height/2
         
     def intersectsWith(self, a_Rectangle):
-        return intersects(self.getLeftSide(), self.getRightSide(), a_Rectangle.getLeftSide(), a_Rectangle.getRightSide())
+        return intersects(self.getLeftSide(), self.getRightSide(), a_Rectangle.getLeftSide(), a_Rectangle.getRightSide()) and intersects(self.getTop(), self.getBottom(), a_Rectangle.getTop(), a_Rectangle.getBottom())
 
 def intersects(a1, a2, b1, b2):
     return a1 < b1 < a2 or b1 < a1 < b2
@@ -185,8 +177,8 @@ class Wall(Sprite):
     def __init__(self, x, y):
         self.centerX = x
         self.centerY = y
-        self.leftWall = Rectangle(x - GAP_WIDTH - WALL_WIDTH, y, WALL_WIDTH, WALL_HEIGHT)
-        self.rightWall = Rectangle(x + GAP_WIDTH, y, WALL_WIDTH, WALL_HEIGHT)
+        self.leftWall = Rectangle(self.centerX - GAP_WIDTH/2 - WALL_WIDTH/2, y, WALL_WIDTH, WALL_HEIGHT)
+        self.rightWall = Rectangle(self.centerX + GAP_WIDTH/2 + WALL_WIDTH/2, y, WALL_WIDTH, WALL_HEIGHT)
     
     def render(self):
         self.leftWall.render()
