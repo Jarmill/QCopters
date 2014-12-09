@@ -139,13 +139,13 @@ class Flapper(Sprite):
         
         #gather relevant parameters
         acc = self.accel
-        acc_index = numpy.abs(acc_div - acc).argmin()
+        acc_index = numpy.abs(self.acc_div - acc).argmin()
         vel = self.velocity
-        vel_index = numpy.abs(vel_div - vel).argmin()
+        vel_index = numpy.abs(self.vel_div - vel).argmin()
         h = self.x - near_wall.centerX
-        h_index = numpy.abs(h_div - h).argmin()
+        h_index = numpy.abs(self.h_div - h).argmin()
         v = near_wall.centerY
-        v_index = numpy.abs(v_div - v).argmin()
+        v_index = numpy.abs(self.v_div - v).argmin()
         
         #determine action
         new_param = [acc_index, vel_index, h_index, v_index]
@@ -158,7 +158,7 @@ class Flapper(Sprite):
             alpha = 0.7 # learning rate
             lam = 1.0 #discount rate (permanent memory)
         
-        self.old_param = np.array([tap, acc_index, vel_index, h_index, v_index])
+        self.old_param = [tap, acc_index, vel_index, h_index, v_index]
         #return action
         #0 for wait, 1 for tap (change direction of acceleration)
         
