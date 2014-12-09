@@ -108,28 +108,32 @@ class Flapper(Sprite):
     #Put static variables here
     #All knowledge variables (Q matrix, parameters) are static and shared among all Flapper instances
     #Fields
+    #   Action: 2
     #   Direction: 2
     #   Velocity: 15
     #   Vertical Distance: 10
     #   Horizontal Distance: 20
-    #   State Space: 15*2*25*10 = 7.5k
-    N_dir_div = 2
+    #   State Space: 2*2*15*10*20 = 12k
+    N_tap_div = 2
+    N_acc_div = 2
     N_vel_div = 15
     N_x_div = 25
     N_y_div = 10
     #TODO: figure out a way to incorporate the action with the acceleration
-    dir_div = numpy.array([-2, 2])
+    tap_div = numpy.array([0, 1])
+    acc_div = numpy.array([-2, 2])
     vel_div = numpy.linspace(0.0, 30, N_vel_div)
     h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_x_div)
     v_div = numpy.linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_y_div),
     #The actual Q matrix (knowledge base)
     #Q[direction, velocity, x distance to
-    Q = numpy.zeros([N_dir_div, N_vel_div, N_x_div, N_y_div])
+    Q = numpy.zeros([N_tap_div, N_dir_div, N_vel_div, N_x_div, N_y_div])
     
     def __init__(self):
         self.accel = 2
         self.x = SCREEN_WIDTH / 2
         self.velocity = 0
+        self.old_param = []
     
     def moveTick(self):
         #moveTick is for rendering/interaction with world only
@@ -138,8 +142,10 @@ class Flapper(Sprite):
 
     def act(self, near_wall, life):
         #actual implementation of Q-Learning
-        dir = self.accel
-        dir_index = numpy.abs(dir_div - dir).argmin()
+        
+        #gather relevant parameters
+        acc = self.accel
+        acc_index = numpy.abs(acc_div - acc).argmin()
         vel = self.velocity
         vel_index = numpy.abs(vel_div - vel).argmin()
         h = self.x - near_wall.centerX
@@ -147,10 +153,22 @@ class Flapper(Sprite):
         v = near_wall.centerY
         v_index = numpy.abs(v_div - v).argmin()
         
-        reward = 1 if life else -1000
-        Q_curr = self.Q[dir_index, vel_index, h_index, v_index]
-        alpha = 0.7 # learning rate
-        lam = 1 #discount rate (permanent memory)
+        #determine action
+        new_param = [acc_index, vel_index, h_index, v_index]
+        tap = self.Q[:, new_param].argmax()
+        
+        #update Q matrix
+        if self.old_param != []:
+            reward = 1 if life else -1000
+            self.Q[self.old_param] += alpha * (reward + lam*np.max(self.Q[:, new_param]) - self.Q[self.old_param])
+            alpha = 0.7 # learning rate
+            lam = 1.0 #discount rate (permanent memory)
+        
+        self.old_param = np.array([tap, acc_index, vel_index, h_index, v_index])
+        #return action
+        #0 for wait, 1 for tap (change direction of acceleration)
+        
+        return tap
 
 
     def flip(self):
