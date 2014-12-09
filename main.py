@@ -105,20 +105,25 @@ class Flapper(Sprite):
     #   Velocity: 15
     #   Vertical Distance: 10
     #   Horizontal Distance: 20
-    #   State Space: 2*2*15*10*20 = 12k
+    #   State Space: 2*2*20*10*20 = 12k
     N_tap_div = 2
     N_acc_div = 2
-    N_vel_div = 15
-    N_x_div = 25
-    N_y_div = 10
+    N_vel_div = 20
+    N_h_div = 25
+    N_v_div = 10
     #TODO: figure out a way to incorporate the action with the acceleration
     tap_div = numpy.array([0, 1])
     acc_div = numpy.array([-2, 2])
-    vel_div = numpy.linspace(0.0, 30, N_vel_div)
+    vel_div = numpy.linspace(-numpy.sqrt(40), numpy.sqrt(40), N_vel_div)**2
+    #1/2 a t^2 = x
+    #1/2*2*t^2 = 400
+    #t = 20
+    #a t = v
+    #v = 2*20 = 40
     #might want to make vel nonlinearly spaced, like quadratic spacing.
     #low velocities are more likely than high velocities.
-    h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_x_div)
-    v_div = numpy.linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_y_div),
+    h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
+    v_div = numpy.linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_v_div),
     #The actual Q matrix (knowledge base)
     #Q[direction, velocity, x distance to
     Q = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_x_div, N_y_div])
@@ -144,7 +149,7 @@ class Flapper(Sprite):
         vel_index = numpy.abs(self.vel_div - vel).argmin()
         h = self.x - near_wall.centerX
         h_index = numpy.abs(self.h_div - h).argmin()
-        v = near_wall.centerY
+        v = near_wall.centerY + WALL_HEIGHT/2
         v_index = numpy.abs(self.v_div - v).argmin()
         
         #determine action
