@@ -126,7 +126,7 @@ class Flapper(Sprite):
     v_div = numpy.linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_v_div),
     #The actual Q matrix (knowledge base)
     #Q[direction, velocity, x distance to
-    Q = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_x_div, N_y_div])
+    Q = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_h_div, N_v_div])
     
     def __init__(self):
         self.accel = 2
