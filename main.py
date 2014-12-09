@@ -120,11 +120,11 @@ class Flapper(Sprite):
     #TODO: figure out a way to incorporate the action with the acceleration
     dir_div = numpy.array([-2, 2])
     vel_div = numpy.linspace(0.0, 30, N_vel_div)
-    h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
-    v_div = numpy.linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_v_div),
+    h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_x_div)
+    v_div = numpy.linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_y_div),
     #The actual Q matrix (knowledge base)
     #Q[direction, velocity, x distance to
-    Q = numpy.zeros(N_dir_div, N_vel_div, N_h_div, N_v_div)
+    Q = numpy.zeros([N_dir_div, N_vel_div, N_x_div, N_y_div])
     
     def __init__(self):
         self.accel = 2
