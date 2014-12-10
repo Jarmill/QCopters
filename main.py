@@ -7,10 +7,11 @@ SCREEN_HEIGHT = 600
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 20
 GAP_WIDTH = 100
-DOWNWARDS_VELOCITY = 1
+DOWNWARDS_VELOCITY = 2
 FLAPPER_SIZE = 30
 NUM_WALLS = 8
 FPS = 60.0
+TERMINAL_VELOCITY = 10
 RENDER = True
 
 #HAMMER-OFFSET = 50
@@ -34,11 +35,10 @@ def main():
         while 1:
             W.moveTick()
 
-def timerFired():
+def timerFired(): #Run if we're rendering; otherwise, just moveTick is run.
     W.moveTick()
-    CANVAS.delete(ALL)
     W.render()
-    CANVAS.after(1,timerFired)
+    CANVAS.after(1, timerFired)
 
 def mousePressed(CANVAS):
     W.flapper.flip()
@@ -50,6 +50,7 @@ class World(object):
         self.time = 0
         
     def render(self):
+        CANVAS.delete(ALL)
         for item in self.walls:
             item.render()
         self.flapper.render()
@@ -145,12 +146,13 @@ class Flapper(Rectangle):
         self.height = FLAPPER_SIZE
         self.velocity = 0
         self.old_param = []
-        print self.centerX
     
     def moveTick(self):
         #moveTick is for rendering/interaction with world only
-        print "HI"
-        self.velocity += self.accel
+        if self.accel >= 0:
+            self.velocity = min(self.velocity + self.accel, TERMINAL_VELOCITY)
+        else:
+            self.velocity = max(self.velocity + self.accel, -TERMINAL_VELOCITY)
         self.centerX += self.velocity
 
     def act(self, near_wall, life):
