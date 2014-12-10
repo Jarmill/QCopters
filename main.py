@@ -6,8 +6,9 @@ SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 600
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 20
-GAP_WIDTH = 200
+GAP_WIDTH = 100
 DOWNWARDS_VELOCITY = 1
+FLAPPER_SIZE = 30
 NUM_WALLS = 8
 FPS = 60.0
 RENDER = True
@@ -35,8 +36,9 @@ def main():
 
 def timerFired():
     W.moveTick()
+    CANVAS.delete(ALL)
     W.render()
-    CANVAS.after(700,timerFired)
+    CANVAS.after(1,timerFired)
 
 def mousePressed(CANVAS):
     W.flapper.flip()
@@ -44,8 +46,8 @@ def mousePressed(CANVAS):
 class World(object):
     def __init__(self):
         self.flapper = Flapper()
-        self.walls = [Wall(200, 200)]
-        #self.walls = [Wall(SCREEN_WIDTH/2, 200+n) for n in [100, 500]]
+        self.walls = [Wall(SCREEN_WIDTH/2, 200+n) for n in [-100, 100, 300]]
+        self.time = 0
         
     def render(self):
         for item in self.walls:
@@ -53,15 +55,19 @@ class World(object):
         self.flapper.render()
         
     def moveTick(self):
-        self.flapper.moveTick()
+        self.time += 1
+        if self.time % 3 == 0:
+            self.flapper.moveTick()
         for item in self.walls:
             item.moveTick()
+            if item.intersectsWith(self.flapper):
+                print "LOSS"
 
 class Sprite(object):
     def __init__(self, centerX, centerY):
         self.centerX = centerX
         self.centerY = centerY
-    def intersectsWith(a_Sprite):
+    def intersectsWith(self, a_Sprite):
         #return true or false
         pass
     #def getBounds():
@@ -76,10 +82,13 @@ class Rectangle(Sprite):
         
         
     def render(self):
+        #CANVAS.create_rectangle(self.getLeftSide(), self.getTop()-4, self.getRightSide(), self.getBottom(), fill="white", width=0)
         CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="grey80", width=0)
         
     def moveDownBy(self, dist):
         self.centerY += dist
+        if self.centerY > SCREEN_HEIGHT + WALL_HEIGHT/2:
+            self.centerY -= SCREEN_HEIGHT
         
     def getRightSide(self):
         return self.centerX + self.width/2
@@ -96,7 +105,7 @@ class Rectangle(Sprite):
 def intersects(a1, a2, b1, b2):
     return a1 < b1 < a2 or b1 < a1 < b2
 
-class Flapper(Sprite):
+class Flapper(Rectangle):
     #Put static variables here
     #All knowledge variables (Q matrix, parameters) are static and shared among all Flapper instances
     #Fields
@@ -130,14 +139,19 @@ class Flapper(Sprite):
     
     def __init__(self):
         self.accel = 2
-        self.x = SCREEN_WIDTH / 2
+        self.centerX = SCREEN_WIDTH / 2
+        self.centerY = SCREEN_HEIGHT - FLAPPER_SIZE
+        self.width = FLAPPER_SIZE
+        self.height = FLAPPER_SIZE
         self.velocity = 0
         self.old_param = []
+        print self.centerX
     
     def moveTick(self):
         #moveTick is for rendering/interaction with world only
+        print "HI"
         self.velocity += self.accel
-        self.x += self.velocity
+        self.centerX += self.velocity
 
     def act(self, near_wall, life):
         #actual implementation of Q-Learning
@@ -169,12 +183,8 @@ class Flapper(Sprite):
         
         return tap
 
-
     def flip(self):
         self.accel = -self.accel
-    
-    def render(self):
-        pass
 
 #class Hammer(Sprite):
     #plus direction swinging
@@ -192,8 +202,14 @@ class Wall(Sprite):
         self.rightWall.render()
     
     def moveTick(self):
-        self.leftWall.moveDownBy(DOWNWARDS_VELOCITY)
-        self.rightWall.moveDownBy(DOWNWARDS_VELOCITY)
+        self.centerY += DOWNWARDS_VELOCITY
+        if self.centerY - WALL_HEIGHT/2 > SCREEN_HEIGHT:
+            self.centerY -= SCREEN_HEIGHT
+            self.centerX = random.randint(GAP_WIDTH/2, SCREEN_WIDTH - GAP_WIDTH/2)
+            self.leftWall.centerX = self.centerX - GAP_WIDTH/2 - WALL_WIDTH/2
+            self.rightWall.centerX = self.centerX + GAP_WIDTH/2 + WALL_WIDTH/2
+        self.leftWall.centerY = self.centerY
+        self.rightWall.centerY = self.centerY
 
 
 if __name__ == "__main__":
