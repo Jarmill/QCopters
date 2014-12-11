@@ -31,6 +31,10 @@ def main():
     CANVAS.pack()
     root.bind("<Button-1>", mousePressed)
     root.bind("<Button-2>", toggleRendering)
+    root.bind("<s>", saveQ)
+    root.bind("<r>", restoreQ)
+    #root.bind("<p>", pause)
+    #root.bind("<q>", quit)
     root.resizable(width=0, height = 0)
     timerFired()
     root.mainloop()
@@ -47,7 +51,13 @@ def mousePressed(CANVAS):
     
 def toggleRendering(CANVAS):
     W.render = not W.render
+    
+def saveQ(CANVAS):
+    W.flapper.saveQ()
 
+def restoreQ(CANVAS):
+    W.flapper.restoreQ()
+    
 class World(object):
     def __init__(self):
         self.reset()
@@ -234,7 +244,14 @@ class Flapper(Rectangle):
         
     def outOfBounds(self):
         return not (FLAPPER_SIZE / 2 < self.centerX  < SCREEN_WIDTH - (FLAPPER_SIZE/2))
-
+    
+    def saveQ(self):
+        print "SAVED!"
+        numpy.save("Q_matrix.npy", self.Q)
+    
+    def restoreQ(self):
+        print "RESTORED!"
+        self.Q = numpy.load("Q_matrix.npy")
 #class Hammer(Sprite):
     #plus direction swinging
     #and angle if we have time for that and can figure out how to do it nicely in pygame
