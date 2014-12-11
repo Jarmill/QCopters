@@ -6,15 +6,16 @@ import random
 import pdb
 
 SCREEN_WIDTH = 400
-SCREEN_HEIGHT = 600
+SCREEN_HEIGHT = NUM_WALLS*DIST_BETWEEN_WALLS
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 20
 GAP_WIDTH = 100
 DOWNWARDS_VELOCITY = 2
 FLAPPER_SIZE = 30
-NUM_WALLS = 4
+NUM_WALLS = 3
 FPS = 60.0
-TERMINAL_VELOCITY = 10
+TERMINAL_VELOCITY = 20
+DIST_BETWEEN_WALLS = 200
 
 #HAMMER-OFFSET = 50
 
@@ -65,7 +66,7 @@ class World(object):
         
     def reset(self):
         self.flapper = Flapper()
-        self.walls = [Wall(200+n) for n in [0, -200, -400]]
+        self.walls = [Wall(DIST_BETWEEN_WALLS+n) for n in [0, DIST_BETWEEN_WALLS, -DIST_BETWEEN_WALLS]]
         self.time = 0
         self.score = 0
         
