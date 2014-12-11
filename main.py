@@ -6,16 +6,16 @@ import random
 import pdb
 
 SCREEN_WIDTH = 400
+NUM_WALLS = 3
+DIST_BETWEEN_WALLS = 200
 SCREEN_HEIGHT = NUM_WALLS*DIST_BETWEEN_WALLS
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 20
 GAP_WIDTH = 100
 DOWNWARDS_VELOCITY = 2
 FLAPPER_SIZE = 30
-NUM_WALLS = 3
 FPS = 60.0
 TERMINAL_VELOCITY = 20
-DIST_BETWEEN_WALLS = 200
 
 #HAMMER-OFFSET = 50
 
@@ -61,12 +61,18 @@ def restoreQ(CANVAS):
     
 class World(object):
     def __init__(self):
-        self.reset()
         self.highscore = 0
+        self.averages = [0 for i in xrange(20)]
+        self.average = 0
+        self.score = 0
+        self.reset()
         
     def reset(self):
         self.flapper = Flapper()
         self.walls = [Wall(DIST_BETWEEN_WALLS+n) for n in [0, DIST_BETWEEN_WALLS, -DIST_BETWEEN_WALLS]]
+        self.averages.append(self.score)
+        self.averages.pop(0)
+        self.average = sum(self.averages)/20.0
         self.time = 0
         self.score = 0
         
@@ -79,6 +85,7 @@ class World(object):
         CANVAS.delete(ALL)
         CANVAS.create_text(0, 0, text = "Score: %d" % self.score, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH, 0, text = "Top: %d" % self.highscore, anchor = NE)
+        CANVAS.create_text(SCREEN_WIDTH/2, 0, text = "Avg: %d" % self.average, anchor = N)
         for item in self.walls:
             item.render()
         self.flapper.render()
