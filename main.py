@@ -12,65 +12,82 @@ FLAPPER_SIZE = 30
 NUM_WALLS = 8
 FPS = 60.0
 TERMINAL_VELOCITY = 10
-RENDER = True
 
 #HAMMER-OFFSET = 50
 
 def main():
     global W #Tkinter made me do it. :(
     W = World()
-    if RENDER:
-        root = Tk()
-        root.title("QCopters")
-        root.geometry("400x600")
-        root.title("QCopters")
-        global CANVAS
-        CANVAS = Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, highlightthickness = 0)
-        CANVAS.pack()
-        root.bind("<Button-1>", mousePressed)
-        root.resizable(width=0, height = 0)
-        timerFired()
-        root.mainloop()
-    else:
-        while 1:
-            W.moveTick()
+    root = Tk()
+    root.title("QCopters")
+    root.geometry("400x600")
+    root.title("QCopters")
+    global CANVAS
+    W.render = True
+    CANVAS = Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, highlightthickness = 0)
+    CANVAS.pack()
+    root.bind("<Button-1>", mousePressed)
+    root.bind("<Button-2>", toggleRendering)
+    root.resizable(width=0, height = 0)
+    timerFired()
+    root.mainloop()
 
-def timerFired(): #Run if we're rendering; otherwise, just moveTick is run.
+
+def timerFired():
     W.moveTick()
-    W.render()
+    if W.render:
+        W.renderFrame()
     CANVAS.after(1, timerFired)
 
 def mousePressed(CANVAS):
     W.flapper.flip()
+    
+def toggleRendering(CANVAS):
+    W.render = not W.render
 
 class World(object):
     def __init__(self):
-        self.flapper = Flapper()
-        self.walls = [Wall(SCREEN_WIDTH/2, 200+n) for n in [-100, 100, 300]]
-        self.time = 0
+        self.reset()
+        self.highscore = 0
         
-    def render(self):
+    def reset(self):
+        self.flapper = Flapper()
+        self.walls = [Wall(200+n) for n in [0, -200, -400]]
+        self.time = 0
+        self.score = 0
+        
+    def incrementScore(self):
+        self.score += 1
+        self.highscore = max(self.score, self.highscore)
+            
+        
+    def renderFrame(self):
         CANVAS.delete(ALL)
+        CANVAS.create_text(0, 0, text = "Score: %d" % self.score, anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH, 0, text = "Top: %d" % self.highscore, anchor = NE)
         for item in self.walls:
             item.render()
         self.flapper.render()
         
     def moveTick(self):
         self.time += 1
+#    These two lines exist to verify that turning off rendering speeds things up.
+#        if self.time % 100 == 0:
+#            print self.time
         if self.time % 3 == 0:
             self.flapper.moveTick()
         for item in self.walls:
             item.moveTick()
-            if item.intersectsWith(self.flapper):
-                print "LOSS"
+            if item.intersectsWith(self.flapper) or self.flapper.outOfBounds():
+                self.reset()
 
 class Sprite(object):
     def __init__(self, centerX, centerY):
         self.centerX = centerX
         self.centerY = centerY
-    def intersectsWith(self, a_Sprite):
-        #return true or false
-        pass
+    # def intersectsWith(self, a_Sprite):
+    #     #return true or false
+    #     pass
     #def getBounds():
     #returns ((x, y), (x, y)) for top left and bottom right corners
 
@@ -104,7 +121,8 @@ class Rectangle(Sprite):
         return intersects(self.getLeftSide(), self.getRightSide(), a_Rectangle.getLeftSide(), a_Rectangle.getRightSide()) and intersects(self.getTop(), self.getBottom(), a_Rectangle.getTop(), a_Rectangle.getBottom())
 
 def intersects(a1, a2, b1, b2):
-    return a1 < b1 < a2 or b1 < a1 < b2
+    x = (a1 < b1 < a2) or (b1 < a1 < b2)
+    return x
 
 class Flapper(Rectangle):
     #Put static variables here
@@ -187,14 +205,17 @@ class Flapper(Rectangle):
 
     def flip(self):
         self.accel = -self.accel
+        
+    def outOfBounds(self):
+        return not (FLAPPER_SIZE / 2 < self.centerX  < SCREEN_WIDTH - (FLAPPER_SIZE/2))
 
 #class Hammer(Sprite):
     #plus direction swinging
     #and angle if we have time for that and can figure out how to do it nicely in pygame
 
 class Wall(Sprite):
-    def __init__(self, x, y):
-        self.centerX = x
+    def __init__(self, y):
+        self.centerX = random.randint(GAP_WIDTH/2, SCREEN_WIDTH - GAP_WIDTH/2)
         self.centerY = y
         self.leftWall = Rectangle(self.centerX - GAP_WIDTH/2 - WALL_WIDTH/2, y, WALL_WIDTH, WALL_HEIGHT)
         self.rightWall = Rectangle(self.centerX + GAP_WIDTH/2 + WALL_WIDTH/2, y, WALL_WIDTH, WALL_HEIGHT)
@@ -203,13 +224,19 @@ class Wall(Sprite):
         self.leftWall.render()
         self.rightWall.render()
     
+    def intersectsWith(self, rect):
+        return self.leftWall.intersectsWith(rect) or self.rightWall.intersectsWith(rect)
+    
+    
     def moveTick(self):
         self.centerY += DOWNWARDS_VELOCITY
         if self.centerY - WALL_HEIGHT/2 > SCREEN_HEIGHT:
             self.centerY -= SCREEN_HEIGHT
             self.centerX = random.randint(GAP_WIDTH/2, SCREEN_WIDTH - GAP_WIDTH/2)
+            self.centerX = random.randint(GAP_WIDTH/2, SCREEN_WIDTH - GAP_WIDTH/2)
             self.leftWall.centerX = self.centerX - GAP_WIDTH/2 - WALL_WIDTH/2
             self.rightWall.centerX = self.centerX + GAP_WIDTH/2 + WALL_WIDTH/2
+            W.incrementScore()
         self.leftWall.centerY = self.centerY
         self.rightWall.centerY = self.centerY
 
