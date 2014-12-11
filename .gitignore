@@ -41,3 +41,9 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# =========================
+# Generated Files
+# =========================
+Q_matrix.npy
+Q_text.txt
