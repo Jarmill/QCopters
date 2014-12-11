@@ -2,6 +2,9 @@ from Tkinter import *
 import numpy
 import random
 
+#for debugging purposes
+import pdb
+
 SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 600
 WALL_WIDTH = SCREEN_WIDTH
@@ -9,7 +12,7 @@ WALL_HEIGHT = 20
 GAP_WIDTH = 100
 DOWNWARDS_VELOCITY = 2
 FLAPPER_SIZE = 30
-NUM_WALLS = 8
+NUM_WALLS = 4
 FPS = 60.0
 TERMINAL_VELOCITY = 10
 
@@ -74,6 +77,8 @@ class World(object):
 #    These two lines exist to verify that turning off rendering speeds things up.
 #        if self.time % 100 == 0:
 #            print self.time
+
+#   To kill the AI, comment out lines 84, 85, and 89
         if self.time % 3 == 0:
             self.flapper.moveTick()
             if self.flapper.act(self.getLowestWall(), True):
@@ -143,29 +148,37 @@ class Flapper(Rectangle):
     #   Velocity: 15
     #   Vertical Distance: 10
     #   Horizontal Distance: 20
-    #   State Space: 2*2*20*10*20 = 12k
+    #   State Space: 2*2*20*20*10 = 16k
     N_tap_div = 2
     N_acc_div = 2
     N_vel_div = 20
-    N_h_div = 25
+    N_h_div = 20
     N_v_div = 10
-    #TODO: figure out a way to incorporate the action with the acceleration
+
     tap_div = numpy.array([0, 1])
     acc_div = numpy.array([-2, 2])
-    vel_div = numpy.linspace(-numpy.sqrt(40), numpy.sqrt(40), N_vel_div)**2
+    max_vel = numpy.sqrt(2*2*SCREEN_WIDTH)
+    vel_div = numpy.linspace(-numpy.sqrt(max_vel), numpy.sqrt(max_vel), N_vel_div)**2
+    vel_div[:N_vel_div/2] *= -1
     #1/2 a t^2 = x
     #1/2*2*t^2 = 400
     #t = 20
     #a t = v
     #v = 2*20 = 40
-    #might want to make vel nonlinearly spaced, like quadratic spacing.
-    #low velocities are more likely than high velocities.
+    
+    #solution:
+    #t = sqrt(2x/a)
+    #v = sqrt(2xa)
     h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
-    v_div = numpy.linspace(0, (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS, N_v_div),
+    max_v = (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS
+    v_div = numpy.linspace(0, max_v, N_v_div)
     #The actual Q matrix (knowledge base)
     #Q[direction, velocity, x distance to
     Q = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_h_div, N_v_div])
     
+    #learning parameters
+    alpha = 0.7 # learning rate
+    lam = 1.0 #discount rate (permanent memory)
     def __init__(self):
         self.accel = 2
         self.centerX = SCREEN_WIDTH / 2
@@ -191,23 +204,26 @@ class Flapper(Rectangle):
         acc_index = numpy.abs(self.acc_div - acc).argmin()
         vel = self.velocity
         vel_index = numpy.abs(self.vel_div - vel).argmin()
-        h = self.x - near_wall.centerX
+        h = self.centerX - near_wall.centerX
         h_index = numpy.abs(self.h_div - h).argmin()
         v = near_wall.centerY + WALL_HEIGHT/2
         v_index = numpy.abs(self.v_div - v).argmin()
         
         #determine action
-        new_param = [acc_index, vel_index, h_index, v_index]
-        tap = self.Q[:, new_param].argmax()
-        
+        #new_param = [acc_index, vel_index, h_index, v_index]
+        #for some unknown reason, : slicing on the first argument doesn't work
+        #Calling self.Q[:, new_param] breaks.
+        #pdb.set_trace()
+        new_param = ([0,1], acc_index, vel_index, h_index, v_index)
+        #tap = self.Q[:, new_param].argmax()
+        tap = self.Q[new_param].argmax()
         #update Q matrix
         if self.old_param != []:
             reward = 1 if life else -1000
-            self.Q[self.old_param] += alpha * (reward + lam*np.max(self.Q[:, new_param]) - self.Q[self.old_param])
-            alpha = 0.7 # learning rate
-            lam = 1.0 #discount rate (permanent memory)
+            #self.Q[self.old_param] += alpha * (reward + lam*np.max(self.Q[:, new_param]) - self.Q[self.old_param])
+            self.Q[self.old_param] += self.alpha * (reward + self.lam*numpy.max(self.Q[new_param]) - self.Q[self.old_param])
         
-        self.old_param = [tap, acc_index, vel_index, h_index, v_index]
+        self.old_param = (tap, acc_index, vel_index, h_index, v_index)
         #return action
         #0 for wait, 1 for tap (change direction of acceleration)
         
