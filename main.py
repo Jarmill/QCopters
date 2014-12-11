@@ -76,10 +76,20 @@ class World(object):
 #            print self.time
         if self.time % 3 == 0:
             self.flapper.moveTick()
+            if self.flapper.act(self.getLowestWall(), True):
+                self.flapper.flip()
         for item in self.walls:
             item.moveTick()
             if item.intersectsWith(self.flapper) or self.flapper.outOfBounds():
+                self.flapper.act(self.getLowestWall(), False)
                 self.reset()
+    
+    def getLowestWall(self):
+        bottom = self.walls[0]
+        for item in self.walls:
+            if item.centerY > bottom.centerY:
+                bottom = item
+        return bottom
 
 class Sprite(object):
     def __init__(self, centerX, centerY):
