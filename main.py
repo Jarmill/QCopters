@@ -217,8 +217,7 @@ class Flapper(Rectangle):
     #t = sqrt(2x/a)
     #v = sqrt(2xa)
     h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
-    max_v = (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS
-    v_div = numpy.linspace(0, max_v, N_v_div)
+    v_div = numpy.linspace(0, DIST_BETWEEN_WALLS, N_v_div)
     x_div = numpy.array([0.15, 0.5, 0.85])*SCREEN_WIDTH
 
     #The actual Q matrix (knowledge base)
