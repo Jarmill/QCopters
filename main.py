@@ -6,8 +6,8 @@ import random
 import pdb
 
 SCREEN_WIDTH = 400
-NUM_WALLS = 3
-DIST_BETWEEN_WALLS = 200
+NUM_WALLS = 2
+DIST_BETWEEN_WALLS = 300
 SCREEN_HEIGHT = NUM_WALLS*DIST_BETWEEN_WALLS
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 20
@@ -15,8 +15,9 @@ GAP_WIDTH = 100
 DOWNWARDS_VELOCITY = 2
 FLAPPER_SIZE = 30
 FPS = 60.0
-TERMINAL_VELOCITY = 20
+TERMINAL_VELOCITY = 30
 ACCEL = 2
+
 
 #HAMMER-OFFSET = 50
 
@@ -40,6 +41,7 @@ def main():
     root.bind("<space>", mousePressed)
     root.bind("<p>", pause)
     root.bind("<q>", exit)
+    root.bind("<d>", debug)
     root.resizable(width=0, height = 0)
     timerFired()
     root.mainloop()
@@ -63,6 +65,9 @@ def saveQ(CANVAS):
 
 def restoreQ(CANVAS):
     W.flapper.restoreQ()
+
+def debug(CANVAS):
+    W.debug()
     
 class World(object):
     def __init__(self):
@@ -71,7 +76,7 @@ class World(object):
         self.weight = 0.4
         self.average = 0
         self.score = 0
-        self.flappermode = False
+        self.flappermode = True
         self.paused = False
         self.reset()
         
@@ -96,6 +101,7 @@ class World(object):
         CANVAS.create_text(0, 0, text = "Score: %d" % self.score, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH, 0, text = "Top: %d" % self.highscore, anchor = NE)
         CANVAS.create_text(SCREEN_WIDTH/2, 0, text = "Avg: %d" % self.average, anchor = N)
+        self.color = "black"
         for item in self.walls:
             item.render()
         self.flapper.render()
@@ -123,7 +129,10 @@ class World(object):
             if item.centerY > bottom.centerY:
                 bottom = item
         return bottom
-
+    
+    def debug(self):
+        pdb.set_trace()
+        
 def pause(event):
     W.paused = not W.paused
 
@@ -150,7 +159,7 @@ class Rectangle(Sprite):
         
     def render(self):
         #CANVAS.create_rectangle(self.getLeftSide(), self.getTop()-4, self.getRightSide(), self.getBottom(), fill="white", width=0)
-        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="grey80", width=0)
+        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="grey60", width=0)
         
     def moveDownBy(self, dist):
         self.centerY += dist
@@ -179,16 +188,18 @@ class Flapper(Rectangle):
     #Fields
     #   Action: 2
     #   Direction: 2
-    #   Velocity: 15
+    #   Velocity: 16
+    #   Horizontal Distance: 16
     #   Vertical Distance: 10
-    #   Horizontal Distance: 20
-    #   State Space: 2*2*20*20*10 = 16k
+    #   Gap Distance: 10
+    #   State Space: 2*2*12*15*8*3 = 17.2k
     N_tap_div = 2
     N_acc_div = 2
-    N_vel_div = 16
-    N_h_div = 16
-    N_v_div = 10
-    N_x_div = 10
+    N_vel_div = 12
+    N_h_div = 15
+    N_v_div = 8
+    N_x_div = 3
+    
 
     tap_div = numpy.array([0, 1])
     acc_div = numpy.array([-ACCEL, ACCEL])
@@ -206,16 +217,21 @@ class Flapper(Rectangle):
     #t = sqrt(2x/a)
     #v = sqrt(2xa)
     h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
-    v_div = numpy.linspace(0, numpy.sqrt(SCREEN_HEIGHT/NUM_WALLS), N_v_div)**2
-    x_div = numpy.linspace(FLAPPER_SIZE/2, SCREEN_WIDTH-FLAPPER_SIZE/2, N_x_div)
+    max_v = (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS
+    v_div = numpy.linspace(0, max_v, N_v_div)
+    x_div = numpy.array([0.15, 0.5, 0.85])*SCREEN_WIDTH
+
     #The actual Q matrix (knowledge base)
+    #Q[direction, velocity, x distance to
     Q = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_h_div, N_v_div, N_x_div])
+    Q_count = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_h_div, N_v_div, N_x_div])
+    
     
     #learning parameters
     alpha = 0.7 # learning rate
     lam = 1.0 #discount rate (permanent memory)
     def __init__(self):
-        self.accel = ACCEL
+        self.accel = random.choice([-ACCEL, ACCEL])
         self.centerX = SCREEN_WIDTH / 2
         self.centerY = SCREEN_HEIGHT - FLAPPER_SIZE
         self.width = FLAPPER_SIZE
@@ -230,7 +246,10 @@ class Flapper(Rectangle):
         else:
             self.velocity = max(self.velocity + self.accel, -TERMINAL_VELOCITY)
         self.centerX += self.velocity
-
+    
+    def render(self):
+        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="navy", width=0)
+    
     def act(self, near_wall, life):
         #actual implementation of Q-Learning
         
@@ -251,7 +270,6 @@ class Flapper(Rectangle):
         #for some unknown reason, : slicing on the first argument doesn't work
         #Calling self.Q[:, new_param] breaks.
         #pdb.set_trace()
-        
         new_param = ([0,1], acc_index, vel_index, h_index, v_index, x_index)
         #tap = self.Q[:, new_param].argmax()
         tap = self.Q[new_param].argmax()
@@ -262,10 +280,12 @@ class Flapper(Rectangle):
             self.Q[self.old_param] += self.alpha * (reward + self.lam*numpy.max(self.Q[new_param]) - self.Q[self.old_param])
         
         self.old_param = (tap, acc_index, vel_index, h_index, v_index, x_index)
+        self.Q_count[self.old_param] += 1
         #return action
         #0 for wait, 1 for tap (change direction of acceleration)
         
         #if tap: print new_param, self.Q[new_param]
+        #if tap: print self.old_param, self.Q[self.old_param]
         return tap
 
     def flip(self):
@@ -277,10 +297,12 @@ class Flapper(Rectangle):
     def saveQ(self):
         print "SAVED!"
         numpy.save("Q_matrix.npy", self.Q)
-    
+        numpy.savetxt("Q_text.txt", self.Q.flatten())
+        
     def restoreQ(self):
         print "RESTORED!"
         self.Q = numpy.load("Q_matrix.npy")
+        #pdb.set_trace()
 #class Hammer(Sprite):
     #plus direction swinging
     #and angle if we have time for that and can figure out how to do it nicely in pygame
