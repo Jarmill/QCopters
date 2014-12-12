@@ -194,6 +194,7 @@ class Flapper(Rectangle):
     #   Gap Distance: 10
     #   State Space: 2*2*12*13*8*5 = 21.2k
     N_tap_div = 2
+    N_acc_div = 2
     N_vel_div = 12
     N_h_div = 11
     N_v_div = 8
@@ -221,12 +222,12 @@ class Flapper(Rectangle):
 
     #The actual Q matrix (knowledge base)
     #Q[direction, velocity, x distance to
-    Q = numpy.zeros([N_tap_div, N_vel_div, N_h_div, N_v_div, N_x_div])
-    Q_count = numpy.zeros([N_tap_div, N_vel_div, N_h_div, N_v_div, N_x_div])
+    Q = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_h_div, N_v_div, N_x_div])
+    Q_count = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_h_div, N_v_div, N_x_div])
     
     
     #learning parameters
-    alpha = 0.2 # learning rate
+    alpha = 0.7 # learning rate
     lam = 1.0 #discount rate (permanent memory)
     def __init__(self):
         self.accel = random.choice([-ACCEL, ACCEL])
@@ -252,16 +253,15 @@ class Flapper(Rectangle):
         #actual implementation of Q-Learning
         
         #gather relevant parameters
-        accPos = self.accel / ACCEL
-        vel = self.velocity / accPos
+        acc = self.accel
+        acc_index = numpy.abs(self.acc_div - acc).argmin()
+        vel = self.velocity
         vel_index = numpy.abs(self.vel_div - vel).argmin()
-        h = (self.centerX - near_wall.centerX)
-        if accPos == -1:
-            h = (near_wall.centerX - self.centerX)
+        h = self.centerX - near_wall.centerX
         h_index = numpy.abs(self.h_div - h).argmin()
         v = near_wall.centerY + WALL_HEIGHT/2
         v_index = numpy.abs(self.v_div - v).argmin()
-        x = self.centerX / accPos
+        x = self.centerX
         x_index = numpy.abs(self.x_div - x).argmin()
         
         #determine action
@@ -269,7 +269,7 @@ class Flapper(Rectangle):
         #for some unknown reason, : slicing on the first argument doesn't work
         #Calling self.Q[:, new_param] breaks.
         #pdb.set_trace()
-        new_param = ([0,1], vel_index, h_index, v_index, x_index)
+        new_param = ([0,1], acc_index, vel_index, h_index, v_index, x_index)
         #tap = self.Q[:, new_param].argmax()
         tap = self.Q[new_param].argmax()
         #update Q matrix
@@ -278,7 +278,7 @@ class Flapper(Rectangle):
             #self.Q[self.old_param] += alpha * (reward + lam*np.max(self.Q[:, new_param]) - self.Q[self.old_param])
             self.Q[self.old_param] += self.alpha * (reward + self.lam*numpy.max(self.Q[new_param]) - self.Q[self.old_param])
         
-        self.old_param = (tap, vel_index, h_index, v_index, x_index)
+        self.old_param = (tap, acc_index, vel_index, h_index, v_index, x_index)
         self.Q_count[self.old_param] += 1
         #return action
         #0 for wait, 1 for tap (change direction of acceleration)
