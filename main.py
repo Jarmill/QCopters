@@ -192,13 +192,13 @@ class Flapper(Rectangle):
     #   Horizontal Distance: 16
     #   Vertical Distance: 10
     #   Gap Distance: 10
-    #   State Space: 2*2*12*15*8*3 = 17.2k
+    #   State Space: 2*2*12*13*8*5 = 21.2k
     N_tap_div = 2
     N_acc_div = 2
     N_vel_div = 12
-    N_h_div = 15
+    N_h_div = 11
     N_v_div = 8
-    N_x_div = 3
+    N_x_div = 5
     
 
     tap_div = numpy.array([0, 1])
@@ -218,7 +218,7 @@ class Flapper(Rectangle):
     #v = sqrt(2xa)
     h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
     v_div = numpy.linspace(0, DIST_BETWEEN_WALLS, N_v_div)
-    x_div = numpy.array([0.15, 0.5, 0.85])*SCREEN_WIDTH
+    x_div = numpy.array([0.1, 0.3, 0.5, 0.7, 0.9])*SCREEN_WIDTH
 
     #The actual Q matrix (knowledge base)
     #Q[direction, velocity, x distance to
