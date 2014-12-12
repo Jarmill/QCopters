@@ -18,6 +18,7 @@ FPS = 60.0
 TERMINAL_VELOCITY = 30
 ACCEL = 2
 COST = 1000
+EPSILON = 3
 
 COLORS = ["Blue", "Red", "Green", "Yellow", "Grey60", "Orange", "Navy", "Purple", "Pink"]
 
@@ -280,7 +281,10 @@ class Flapper(Rectangle):
         #pdb.set_trace()
         new_param = ([0,1], acc_index, vel_index, h_index, v_index, x_index)
         #tap = self.Q[:, new_param].argmax()
-        tap = self.Q[new_param].argmax()
+        if random.randint(0,100) > EPSILON:
+            tap = self.Q[new_param].argmax()
+        else:
+            tap = random.choice([1, 0])
         #update Q matrix
         if self.old_param != []:
             reward = 1 if life else -COST
