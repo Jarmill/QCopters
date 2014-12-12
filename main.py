@@ -12,7 +12,7 @@ SCREEN_HEIGHT = NUM_WALLS*DIST_BETWEEN_WALLS
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 15
 GAP_WIDTH = 75
-DOWNWARDS_VELOCITY = 2
+DOWNWARDS_VELOCITY = 6
 FLAPPER_SIZE = 15
 FPS = 60.0
 TERMINAL_VELOCITY = 30
@@ -114,14 +114,13 @@ class World(object):
 #        if self.time % 100 == 0:
 #            print self.time
 
-        if self.time % 3 == 0:
-            for item in self.flappers:
-                item.moveTick()
-            for item in self.flappers:
-                if not item.dead:
-                    if item.act(self.getLowestWall(), True):
-                    #if item.flappermode:
-                        item.flip()
+        for item in self.flappers:
+            item.moveTick()
+        for item in self.flappers:
+            if not item.dead:
+                if item.act(self.getLowestWall(), True):
+                #if item.flappermode:
+                    item.flip()
         for item in self.walls:
             item.moveTick()
             for bird in self.flappers:
