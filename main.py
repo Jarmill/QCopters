@@ -17,7 +17,7 @@ FLAPPER_SIZE = 10
 FPS = 60.0
 TERMINAL_VELOCITY = 30
 ACCEL = 2
-
+COST = 1000
 
 #HAMMER-OFFSET = 50
 
@@ -72,7 +72,7 @@ def debug(CANVAS):
 class World(object):
     def __init__(self):
         self.highscore = 0
-        #self.averages = [0 for i in xrange(20)]
+        self.averages = [0 for i in xrange(20)]
         self.weight = 0.4
         self.average = 0
         self.score = 0
@@ -83,11 +83,11 @@ class World(object):
     def reset(self):
         self.flapper = Flapper()
         self.walls = [Wall(n) for n in [DIST_BETWEEN_WALLS * k for k in range(0, NUM_WALLS)]]
-        #self.averages.append(self.score)
-        #self.averages.pop(0)
-        #self.average = sum(self.averages)/20.0
+        self.averages.append(self.score)
+        self.averages.pop(0)
+        self.average = sum(self.averages)/20.0
         #exponential moving average
-        self.average = self.weight * self.score + (1-self.weight) * self.average
+        #self.average = self.weight * self.score + (1-self.weight) * self.average
         self.time = 0
         self.score = 0
         
@@ -274,7 +274,7 @@ class Flapper(Rectangle):
         tap = self.Q[new_param].argmax()
         #update Q matrix
         if self.old_param != []:
-            reward = 1 if life else -1000
+            reward = 1 if life else -COST
             #self.Q[self.old_param] += alpha * (reward + lam*np.max(self.Q[:, new_param]) - self.Q[self.old_param])
             self.Q[self.old_param] += self.alpha * (reward + self.lam*numpy.max(self.Q[new_param]) - self.Q[self.old_param])
         
