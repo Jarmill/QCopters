@@ -18,7 +18,7 @@ FPS = 60.0
 TERMINAL_VELOCITY = 30
 ACCEL = 2
 
-COLORS = ["Blue", "Red", "Green", "Yellow", "Grey60", "Orange"]
+COLORS = ["Blue", "Red", "Green", "Yellow", "Grey60", "Orange", "Navy", "Purple", "Pink"]
 
 
 #HAMMER-OFFSET = 50
@@ -168,7 +168,7 @@ class Rectangle(Sprite):
         
     def render(self):
         #CANVAS.create_rectangle(self.getLeftSide(), self.getTop()-4, self.getRightSide(), self.getBottom(), fill="white", width=0)
-        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill=random.choice(COLORS), width=0)
+        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="Black", width=0)
         
     def moveDownBy(self, dist):
         self.centerY += dist
@@ -247,6 +247,8 @@ class Flapper(Rectangle):
         self.velocity = 0
         self.old_param = []
         self.dead = False
+        self.color = random.choice(COLORS)
+
     
     def moveTick(self):
         #moveTick is for rendering/interaction with world only
@@ -257,7 +259,7 @@ class Flapper(Rectangle):
         self.centerX += self.velocity
     
     def render(self):
-        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="navy", width=0)
+        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill=self.color, width=0)
     
     def act(self, near_wall, life):
         #actual implementation of Q-Learning
