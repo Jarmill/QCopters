@@ -16,6 +16,7 @@ DOWNWARDS_VELOCITY = 2
 FLAPPER_SIZE = 30
 FPS = 60.0
 TERMINAL_VELOCITY = 20
+ACCEL = 2
 
 #HAMMER-OFFSET = 50
 
@@ -62,7 +63,8 @@ def restoreQ(CANVAS):
 class World(object):
     def __init__(self):
         self.highscore = 0
-        self.averages = [0 for i in xrange(20)]
+        #self.averages = [0 for i in xrange(20)]
+        self.weight = 0.4
         self.average = 0
         self.score = 0
         self.reset()
@@ -70,9 +72,11 @@ class World(object):
     def reset(self):
         self.flapper = Flapper()
         self.walls = [Wall(DIST_BETWEEN_WALLS+n) for n in [0, DIST_BETWEEN_WALLS, -DIST_BETWEEN_WALLS]]
-        self.averages.append(self.score)
-        self.averages.pop(0)
-        self.average = sum(self.averages)/20.0
+        #self.averages.append(self.score)
+        #self.averages.pop(0)
+        #self.average = sum(self.averages)/20.0
+        #exponential moving average
+        self.average = self.weight * self.score + (1-self.weight) * self.average
         self.time = 0
         self.score = 0
         
@@ -96,7 +100,6 @@ class World(object):
 #        if self.time % 100 == 0:
 #            print self.time
 
-#   To kill the AI, comment out lines 84, 85, and 89
         if self.time % 3 == 0:
             self.flapper.moveTick()
             if self.flapper.act(self.getLowestWall(), True):
@@ -174,9 +177,10 @@ class Flapper(Rectangle):
     N_v_div = 10
 
     tap_div = numpy.array([0, 1])
-    acc_div = numpy.array([-2, 2])
-    max_vel = numpy.sqrt(2*2*SCREEN_WIDTH)
-    vel_div = numpy.linspace(-numpy.sqrt(max_vel), numpy.sqrt(max_vel), N_vel_div)**2
+    acc_div = numpy.array([-ACCEL, ACCEL])
+    #max_vel = numpy.sqrt(2*2*SCREEN_WIDTH)
+    #vel_div = numpy.linspace(-numpy.sqrt(max_vel), numpy.sqrt(max_vel), N_vel_div)**2
+    vel_div = numpy.linspace(-numpy.sqrt(TERMINAL_VELOCITY), numpy.sqrt(TERMINAL_VELOCITY), N_vel_div)**2
     vel_div[:N_vel_div/2] *= -1
     #1/2 a t^2 = x
     #1/2*2*t^2 = 400
@@ -188,17 +192,16 @@ class Flapper(Rectangle):
     #t = sqrt(2x/a)
     #v = sqrt(2xa)
     h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
-    max_v = (SCREEN_HEIGHT - NUM_WALLS*WALL_HEIGHT)/NUM_WALLS
-    v_div = numpy.linspace(0, max_v, N_v_div)
+    v_div = numpy.linspace(0, numpy.sqrt(SCREEN_HEIGHT/NUM_WALLS), N_v_div)**2
     #The actual Q matrix (knowledge base)
     #Q[direction, velocity, x distance to
     Q = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_h_div, N_v_div])
     
     #learning parameters
     alpha = 0.7 # learning rate
-    lam = 1.0 #discount rate (permanent memory)
+    lam = 0.999 #discount rate (permanent memory)
     def __init__(self):
-        self.accel = 2
+        self.accel = ACCEL
         self.centerX = SCREEN_WIDTH / 2
         self.centerY = SCREEN_HEIGHT - FLAPPER_SIZE
         self.width = FLAPPER_SIZE
@@ -232,6 +235,7 @@ class Flapper(Rectangle):
         #for some unknown reason, : slicing on the first argument doesn't work
         #Calling self.Q[:, new_param] breaks.
         #pdb.set_trace()
+        
         new_param = ([0,1], acc_index, vel_index, h_index, v_index)
         #tap = self.Q[:, new_param].argmax()
         tap = self.Q[new_param].argmax()
