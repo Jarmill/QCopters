@@ -19,7 +19,7 @@ TERMINAL_VELOCITY = 30
 ACCEL = 2
 COST = 1000
 
-#HAMMER-OFFSET = 50
+COLORS = ["Blue", "Red", "Green", "Yellow", "Grey60", "Orange", "Navy", "Purple", "Pink"]
 
 def main():
     global W #Tkinter made me do it. :(
@@ -32,13 +32,13 @@ def main():
     W.render = True
     CANVAS = Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, highlightthickness = 0)
     CANVAS.pack()
-    root.bind("<1>", mousePressed)
+    #root.bind("<1>", mousePressed)
     root.bind("<2>", toggleRendering)
     root.bind("<s>", saveQ)
     root.bind("<r>", restoreQ)
     root.bind("<h>", humanModeToggle)
     root.bind("<v>", toggleRendering)
-    root.bind("<space>", mousePressed)
+    #root.bind("<space>", mousePressed)
     root.bind("<p>", pause)
     root.bind("<q>", exit)
     root.bind("<d>", debug)
@@ -81,7 +81,7 @@ class World(object):
         self.reset()
         
     def reset(self):
-        self.flapper = Flapper()
+        self.flappers = [Flapper() for i in xrange(30)]
         self.walls = [Wall(n) for n in [DIST_BETWEEN_WALLS * k for k in range(0, NUM_WALLS)]]
         self.averages.append(self.score)
         self.averages.pop(0)
@@ -104,7 +104,9 @@ class World(object):
         self.color = "black"
         for item in self.walls:
             item.render()
-        self.flapper.render()
+        for item in self.flappers:
+            if not item.dead:
+                item.render()
         
     def moveTick(self):
         self.time += 1
@@ -113,15 +115,21 @@ class World(object):
 #            print self.time
 
         if self.time % 3 == 0:
-            self.flapper.moveTick()
-            if self.flapper.act(self.getLowestWall(), True):
-                    if self.flappermode:
-                        self.flapper.flip()
+            for item in self.flappers:
+                item.moveTick()
+            for item in self.flappers:
+                if not item.dead:
+                    if item.act(self.getLowestWall(), True):
+                    #if item.flappermode:
+                        item.flip()
         for item in self.walls:
             item.moveTick()
-            if item.intersectsWith(self.flapper) or self.flapper.outOfBounds():
-                self.flapper.act(self.getLowestWall(), False)
-                self.reset()
+            for bird in self.flappers:
+                if item.intersectsWith(bird) or bird.outOfBounds():
+                    bird.act(self.getLowestWall(), False)
+                    bird.dead = True
+        if not False in [bird.dead for bird in self.flappers]:
+            self.reset()
     
     def getLowestWall(self):
         bottom = self.walls[0]
@@ -159,7 +167,7 @@ class Rectangle(Sprite):
         
     def render(self):
         #CANVAS.create_rectangle(self.getLeftSide(), self.getTop()-4, self.getRightSide(), self.getBottom(), fill="white", width=0)
-        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="grey60", width=0)
+        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="Black", width=0)
         
     def moveDownBy(self, dist):
         self.centerY += dist
@@ -218,7 +226,7 @@ class Flapper(Rectangle):
     
     
     #learning parameters
-    alpha = 0.7 # learning rate
+    alpha = 0. # learning rate
     lam = 1.0 #discount rate (permanent memory)
     def __init__(self):
         self.accel = random.choice([-ACCEL, ACCEL])
@@ -228,6 +236,9 @@ class Flapper(Rectangle):
         self.height = FLAPPER_SIZE
         self.velocity = 0
         self.old_param = []
+        self.dead = False
+        self.color = random.choice(COLORS)
+
     
     def moveTick(self):
         #moveTick is for rendering/interaction with world only
@@ -238,7 +249,7 @@ class Flapper(Rectangle):
         self.centerX += self.velocity
     
     def render(self):
-        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="navy", width=0)
+        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill=self.color, width=0)
     
     def act(self, near_wall, life):
         #actual implementation of Q-Learning
