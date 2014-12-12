@@ -5,15 +5,15 @@ import random
 #for debugging purposes
 import pdb
 
-SCREEN_WIDTH = 400
-NUM_WALLS = 2
-DIST_BETWEEN_WALLS = 200
+SCREEN_WIDTH = 200
+NUM_WALLS = 3
+DIST_BETWEEN_WALLS = 100
 SCREEN_HEIGHT = NUM_WALLS*DIST_BETWEEN_WALLS
 WALL_WIDTH = SCREEN_WIDTH
-WALL_HEIGHT = 20
-GAP_WIDTH = 100
+WALL_HEIGHT = 15
+GAP_WIDTH = 75
 DOWNWARDS_VELOCITY = 2
-FLAPPER_SIZE = 10
+FLAPPER_SIZE = 15
 FPS = 60.0
 TERMINAL_VELOCITY = 30
 ACCEL = 2
@@ -226,8 +226,8 @@ class Flapper(Rectangle):
     
     
     #learning parameters
-    alpha = 0. # learning rate
-    lam = 1.0 #discount rate (permanent memory)
+    alpha = 0.6 # learning rate
+    lam = 0.98 #discount rate (permanent memory)
     def __init__(self):
         self.accel = random.choice([-ACCEL, ACCEL])
         self.centerX = random.randint(3*FLAPPER_SIZE, SCREEN_WIDTH - 3*FLAPPER_SIZE)
