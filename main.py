@@ -303,9 +303,6 @@ class Flapper(Rectangle):
         print "RESTORED!"
         self.Q = numpy.load("Q_matrix.npy")
         #pdb.set_trace()
-#class Hammer(Sprite):
-    #plus direction swinging
-    #and angle if we have time for that and can figure out how to do it nicely in pygame
 
 class Wall(Sprite):
     def __init__(self, y):
