@@ -7,7 +7,7 @@ import pdb
 
 SCREEN_WIDTH = 400
 NUM_WALLS = 2
-DIST_BETWEEN_WALLS = 300
+DIST_BETWEEN_WALLS = 200
 SCREEN_HEIGHT = NUM_WALLS*DIST_BETWEEN_WALLS
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 20
@@ -26,7 +26,7 @@ def main():
     W = World()
     root = Tk()
     root.title("QCopters")
-    root.geometry("400x600")
+    root.geometry("%dx%d"%(SCREEN_WIDTH,SCREEN_HEIGHT) )
     root.title("QCopters")
     global CANVAS
     W.render = True
@@ -82,7 +82,7 @@ class World(object):
         
     def reset(self):
         self.flapper = Flapper()
-        self.walls = [Wall(DIST_BETWEEN_WALLS+n) for n in [0, -DIST_BETWEEN_WALLS]]
+        self.walls = [Wall(n) for n in [DIST_BETWEEN_WALLS * k for k in range(0, NUM_WALLS)]]
         #self.averages.append(self.score)
         #self.averages.pop(0)
         #self.average = sum(self.averages)/20.0
