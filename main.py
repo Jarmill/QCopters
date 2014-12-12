@@ -120,9 +120,10 @@ class World(object):
             for item in self.flappers:
                 item.moveTick()
             for item in self.flappers:
-                if item.act(self.getLowestWall(), True):
+                if not item.dead:
+                    if item.act(self.getLowestWall(), True):
                     #if item.flappermode:
-                    item.flip()
+                        item.flip()
         for item in self.walls:
             item.moveTick()
             for bird in self.flappers:
