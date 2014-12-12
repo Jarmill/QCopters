@@ -38,17 +38,18 @@ def main():
     root.bind("<h>", humanModeToggle)
     root.bind("<v>", toggleRendering)
     root.bind("<space>", mousePressed)
-    #root.bind("<p>", pause)
-    #root.bind("<q>", quit)
+    root.bind("<p>", pause)
+    root.bind("<q>", exit)
     root.resizable(width=0, height = 0)
     timerFired()
     root.mainloop()
 
 
 def timerFired():
-    W.moveTick()
-    if W.render:
-        W.renderFrame()
+    if not W.paused:
+        W.moveTick()
+        if W.render:
+            W.renderFrame()
     CANVAS.after(1, timerFired)
 
 def mousePressed(CANVAS):
@@ -71,6 +72,7 @@ class World(object):
         self.average = 0
         self.score = 0
         self.flappermode = False
+        self.paused = False
         self.reset()
         
     def reset(self):
@@ -121,6 +123,9 @@ class World(object):
             if item.centerY > bottom.centerY:
                 bottom = item
         return bottom
+
+def pause(event):
+    W.paused = not W.paused
 
 def humanModeToggle(event):
     W.flappermode = not W.flappermode
