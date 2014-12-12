@@ -231,7 +231,7 @@ class Flapper(Rectangle):
     lam = 1.0 #discount rate (permanent memory)
     def __init__(self):
         self.accel = random.choice([-ACCEL, ACCEL])
-        self.centerX = SCREEN_WIDTH / 2
+        self.centerX = random.randint(3*FLAPPER_SIZE, SCREEN_WIDTH - 3*FLAPPER_SIZE)
         self.centerY = SCREEN_HEIGHT - FLAPPER_SIZE
         self.width = FLAPPER_SIZE
         self.height = FLAPPER_SIZE
