@@ -36,6 +36,7 @@ def main():
     root.bind("<2>", toggleRendering)
     root.bind("<s>", saveQ)
     root.bind("<r>", restoreQ)
+    root.bind("<a>", rainbow)
     root.bind("<h>", humanModeToggle)
     root.bind("<v>", toggleRendering)
     #root.bind("<space>", mousePressed)
@@ -68,9 +69,13 @@ def restoreQ(CANVAS):
 
 def debug(CANVAS):
     W.debug()
+
+def rainbow(CANVAS):
+    W.rainbow = not W.rainbow
     
 class World(object):
     def __init__(self):
+        self.rainbow = False
         self.highscore = 0
         self.averages = [0 for i in xrange(20)]
         self.weight = 0.4
@@ -166,7 +171,10 @@ class Rectangle(Sprite):
         
     def render(self):
         #CANVAS.create_rectangle(self.getLeftSide(), self.getTop()-4, self.getRightSide(), self.getBottom(), fill="white", width=0)
-        CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="Black", width=0)
+        if not W.rainbow:
+            CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill="Black", width=0)
+        else:
+            CANVAS.create_rectangle(self.getLeftSide(), self.getTop(), self.getRightSide(), self.getBottom(), fill=random.choice(COLORS), width=0)
         
     def moveDownBy(self, dist):
         self.centerY += dist
