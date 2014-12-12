@@ -31,10 +31,13 @@ def main():
     W.render = True
     CANVAS = Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, highlightthickness = 0)
     CANVAS.pack()
-    root.bind("<Button-1>", mousePressed)
-    root.bind("<Button-2>", toggleRendering)
+    root.bind("<1>", mousePressed)
+    root.bind("<2>", toggleRendering)
     root.bind("<s>", saveQ)
     root.bind("<r>", restoreQ)
+    root.bind("<h>", humanModeToggle)
+    root.bind("<v>", toggleRendering)
+    root.bind("<space>", mousePressed)
     #root.bind("<p>", pause)
     #root.bind("<q>", quit)
     root.resizable(width=0, height = 0)
@@ -67,6 +70,7 @@ class World(object):
         self.weight = 0.4
         self.average = 0
         self.score = 0
+        self.flappermode = False
         self.reset()
         
     def reset(self):
@@ -103,7 +107,8 @@ class World(object):
         if self.time % 3 == 0:
             self.flapper.moveTick()
             if self.flapper.act(self.getLowestWall(), True):
-                self.flapper.flip()
+                    if self.flappermode:
+                        self.flapper.flip()
         for item in self.walls:
             item.moveTick()
             if item.intersectsWith(self.flapper) or self.flapper.outOfBounds():
@@ -117,6 +122,9 @@ class World(object):
                 bottom = item
         return bottom
 
+def humanModeToggle(event):
+    W.flappermode = not W.flappermode
+    
 class Sprite(object):
     def __init__(self, centerX, centerY):
         self.centerX = centerX
