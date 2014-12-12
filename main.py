@@ -7,7 +7,7 @@ import pdb
 
 SCREEN_WIDTH = 200
 NUM_WALLS = 3
-DIST_BETWEEN_WALLS = 100
+DIST_BETWEEN_WALLS = 150
 SCREEN_HEIGHT = NUM_WALLS*DIST_BETWEEN_WALLS
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 15
@@ -18,7 +18,6 @@ FPS = 60.0
 TERMINAL_VELOCITY = 30
 ACCEL = 2
 COST = 1000
-EPSILON = 3
 
 COLORS = ["Blue", "Red", "Green", "Yellow", "Grey60", "Orange", "Navy", "Purple", "Pink"]
 
@@ -44,6 +43,7 @@ def main():
     root.bind("<p>", pause)
     root.bind("<q>", exit)
     root.bind("<d>", debug)
+    root.bind("<e>", epsilonZero)
     root.resizable(width=0, height = 0)
     timerFired()
     root.mainloop()
@@ -58,7 +58,13 @@ def timerFired():
 
 def mousePressed(CANVAS):
     W.flapper.flip()
-    
+
+def epsilonZero(thunk):
+    if W.EPSILON == 0:
+        W.EPSILON = 3
+    else:
+        W.EPSILON = 0
+
 def toggleRendering(CANVAS):
     W.render = not W.render
     
@@ -76,6 +82,7 @@ def rainbow(CANVAS):
     
 class World(object):
     def __init__(self):
+        self.EPSILON = 3
         self.rainbow = False
         self.highscore = 0
         self.averages = [0 for i in xrange(20)]
@@ -281,7 +288,7 @@ class Flapper(Rectangle):
         #pdb.set_trace()
         new_param = ([0,1], acc_index, vel_index, h_index, v_index, x_index)
         #tap = self.Q[:, new_param].argmax()
-        if random.randint(0,100) > EPSILON:
+        if random.randint(0,100) > W.EPSILON:
             tap = self.Q[new_param].argmax()
         else:
             tap = random.choice([1, 0])
