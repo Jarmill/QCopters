@@ -172,9 +172,10 @@ class Flapper(Rectangle):
     #   State Space: 2*2*20*20*10 = 16k
     N_tap_div = 2
     N_acc_div = 2
-    N_vel_div = 20
-    N_h_div = 20
+    N_vel_div = 16
+    N_h_div = 16
     N_v_div = 10
+    N_x_div = 10
 
     tap_div = numpy.array([0, 1])
     acc_div = numpy.array([-ACCEL, ACCEL])
@@ -193,13 +194,13 @@ class Flapper(Rectangle):
     #v = sqrt(2xa)
     h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
     v_div = numpy.linspace(0, numpy.sqrt(SCREEN_HEIGHT/NUM_WALLS), N_v_div)**2
+    x_div = numpy.linspace(FLAPPER_SIZE/2, SCREEN_WIDTH-FLAPPER_SIZE/2, N_x_div)
     #The actual Q matrix (knowledge base)
-    #Q[direction, velocity, x distance to
-    Q = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_h_div, N_v_div])
+    Q = numpy.zeros([N_tap_div, N_acc_div, N_vel_div, N_h_div, N_v_div, N_x_div])
     
     #learning parameters
     alpha = 0.7 # learning rate
-    lam = 0.999 #discount rate (permanent memory)
+    lam = 1.0 #discount rate (permanent memory)
     def __init__(self):
         self.accel = ACCEL
         self.centerX = SCREEN_WIDTH / 2
@@ -229,6 +230,8 @@ class Flapper(Rectangle):
         h_index = numpy.abs(self.h_div - h).argmin()
         v = near_wall.centerY + WALL_HEIGHT/2
         v_index = numpy.abs(self.v_div - v).argmin()
+        x = self.centerX
+        x_index = numpy.abs(self.x_div - x).argmin()
         
         #determine action
         #new_param = [acc_index, vel_index, h_index, v_index]
@@ -236,7 +239,7 @@ class Flapper(Rectangle):
         #Calling self.Q[:, new_param] breaks.
         #pdb.set_trace()
         
-        new_param = ([0,1], acc_index, vel_index, h_index, v_index)
+        new_param = ([0,1], acc_index, vel_index, h_index, v_index, x_index)
         #tap = self.Q[:, new_param].argmax()
         tap = self.Q[new_param].argmax()
         #update Q matrix
@@ -245,10 +248,11 @@ class Flapper(Rectangle):
             #self.Q[self.old_param] += alpha * (reward + lam*np.max(self.Q[:, new_param]) - self.Q[self.old_param])
             self.Q[self.old_param] += self.alpha * (reward + self.lam*numpy.max(self.Q[new_param]) - self.Q[self.old_param])
         
-        self.old_param = (tap, acc_index, vel_index, h_index, v_index)
+        self.old_param = (tap, acc_index, vel_index, h_index, v_index, x_index)
         #return action
         #0 for wait, 1 for tap (change direction of acceleration)
         
+        #if tap: print new_param, self.Q[new_param]
         return tap
 
     def flip(self):
