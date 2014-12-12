@@ -82,7 +82,7 @@ class World(object):
         
     def reset(self):
         self.flapper = Flapper()
-        self.walls = [Wall(DIST_BETWEEN_WALLS+n) for n in [0, DIST_BETWEEN_WALLS, -DIST_BETWEEN_WALLS]]
+        self.walls = [Wall(DIST_BETWEEN_WALLS+n) for n in [0, -DIST_BETWEEN_WALLS]]
         #self.averages.append(self.score)
         #self.averages.pop(0)
         #self.average = sum(self.averages)/20.0
