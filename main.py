@@ -192,7 +192,7 @@ class Flapper(Rectangle):
     #   Horizontal Distance: 16
     #   Vertical Distance: 10
     #   Gap Distance: 10
-    #   State Space: 2*2*12*13*8*5 = 21.2k
+    #   State Space: 2*12*13*8*5 = 12.5k
     N_tap_div = 2
     N_acc_div = 2
     N_vel_div = 12
@@ -207,15 +207,6 @@ class Flapper(Rectangle):
     #vel_div = numpy.linspace(-numpy.sqrt(max_vel), numpy.sqrt(max_vel), N_vel_div)**2
     vel_div = numpy.linspace(-numpy.sqrt(TERMINAL_VELOCITY), numpy.sqrt(TERMINAL_VELOCITY), N_vel_div)**2
     vel_div[:N_vel_div/2] *= -1
-    #1/2 a t^2 = x
-    #1/2*2*t^2 = 400
-    #t = 20
-    #a t = v
-    #v = 2*20 = 40
-    
-    #solution:
-    #t = sqrt(2x/a)
-    #v = sqrt(2xa)
     h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
     v_div = numpy.linspace(0, DIST_BETWEEN_WALLS, N_v_div)
     x_div = numpy.array([0.1, 0.3, 0.5, 0.7, 0.9])*SCREEN_WIDTH
