@@ -3,9 +3,6 @@ from Tkinter import *
 import numpy
 import random
 
-#for debugging purposes
-import pdb
-
 SCREEN_WIDTH = 200
 NUM_WALLS = 3
 DIST_BETWEEN_WALLS = 150
@@ -88,7 +85,7 @@ def saveQ(CANVAS):
 def restoreQ(CANVAS):
     print "Restored Q Matrix"
     Flapper.Q = numpy.load("Q_matrix.npy")
-    #pdb.set_trace()
+
 def debug(CANVAS):
     W.debug()
 
@@ -191,9 +188,6 @@ class World(object):
             if item.centerY > bottom.centerY:
                 bottom = item
         return bottom
-    
-    def debug(self):
-        pdb.set_trace()
         
 def pause(event):
     W.paused = not W.paused
@@ -254,7 +248,7 @@ class Flapper(Rectangle):
     #   Horizontal Distance: 16
     #   Vertical Distance: 10
     #   Gap Distance: 10
-    #   State Space: 2*12*13*8*5 = 12.5k
+    #   State Space: 2*2*12*11*8*5 = 21.1k
     N_tap_div = 2
     N_acc_div = 2
     N_vel_div = 12
@@ -265,8 +259,6 @@ class Flapper(Rectangle):
 
     tap_div = numpy.array([0, 1])
     acc_div = numpy.array([-ACCEL, ACCEL])
-    #max_vel = numpy.sqrt(2*2*SCREEN_WIDTH)
-    #vel_div = numpy.linspace(-numpy.sqrt(max_vel), numpy.sqrt(max_vel), N_vel_div)**2
     vel_div = numpy.linspace(-numpy.sqrt(TERMINAL_VELOCITY), numpy.sqrt(TERMINAL_VELOCITY), N_vel_div)**2
     vel_div[:N_vel_div/2] *= -1
     h_div = numpy.linspace(-(SCREEN_WIDTH-GAP_WIDTH), SCREEN_WIDTH-GAP_WIDTH, N_h_div)
@@ -330,16 +322,12 @@ class Flapper(Rectangle):
         x_index = numpy.abs(self.x_div - x).argmin()
         
         #determine action
-        #new_param = [acc_index, vel_index, h_index, v_index]
-        #for some unknown reason, : slicing on the first argument doesn't work
-        #Calling self.Q[:, new_param] breaks.
-        #pdb.set_trace()
         new_param = ([0,1], acc_index, vel_index, h_index, v_index, x_index)
-        #tap = self.Q[:, new_param].argmax()
         if random.random() > self.epsilon:
             tap = self.Q[new_param].argmax()
         else:
             tap = random.choice([1, 0])
+        
         #update Q matrix
         if self.old_param != []:
             reward = (SCREEN_WIDTH - abs(self.centerX - near_wall.centerX)) if life else -COST
@@ -349,9 +337,7 @@ class Flapper(Rectangle):
         self.Q_count[self.old_param] += 1
         #return action
         #0 for wait, 1 for tap (change direction of acceleration)
-        
-        #if tap: print new_param, self.Q[new_param]
-        #if tap: print self.old_param, self.Q[self.old_param]
+
         return tap
 
     def flip(self):
