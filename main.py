@@ -1,3 +1,4 @@
+ # -*- coding: iso-8859-15 -*-
 from Tkinter import *
 import numpy
 import random
@@ -114,6 +115,7 @@ class World(object):
         CANVAS.create_text(0, 0, text = "Score: %d" % self.score, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH, 0, text = "Top: %d" % self.highscore, anchor = NE)
         CANVAS.create_text(SCREEN_WIDTH/2, 0, text = "Avg: %d" % self.average, anchor = N)
+        CANVAS.create_text(SCREEN_WIDTH/2, 30, text = "ε: %d%%" % self.EPSILON, anchor = N)
         self.color = "black"
         for item in self.walls:
             item.render()
