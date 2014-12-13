@@ -157,8 +157,9 @@ class World(object):
         CANVAS.create_text(SCREEN_WIDTH+15, 105, text = "H: Human-Mode: %d (Space to switch direction)" % W.HUMAN, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+15, 120, text = "N: Number of Birds: %d" % W.numFlap, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+15, 135, text = "A: Rainbow Mode: %d" % W.rainbow, anchor = NW)
-        CANVAS.create_text(SCREEN_WIDTH+15, 150, text = "P: Pause", anchor = NW)
-        CANVAS.create_text(SCREEN_WIDTH+15, 165, text = "Q: Exit", anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 150, text = "E: Random Exploration (ε): %d" % (Flapper.epsilon != 0), anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 165, text = "P: Pause", anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 180, text = "Q: Exit", anchor = NW)
 
         
     def moveTick(self):
