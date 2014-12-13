@@ -18,7 +18,7 @@ FLAPPER_SIZE = 15
 FPS = 60.0
 TERMINAL_VELOCITY = 30
 ACCEL = 2
-COST = 1000
+COST = 100000
 
 COLORS = ["Blue", "Red", "Green", "Yellow", "Grey60", "Orange", "Navy", "Purple", "Pink"]
 
@@ -296,7 +296,7 @@ class Flapper(Rectangle):
             tap = random.choice([1, 0])
         #update Q matrix
         if self.old_param != []:
-            reward = 1 if life else -COST
+            reward = (SCREEN_WIDTH - abs(self.centerX - near_wall.centerX)) if life else -COST
             #self.Q[self.old_param] += alpha * (reward + lam*np.max(self.Q[:, new_param]) - self.Q[self.old_param])
             self.Q[self.old_param] += self.alpha * (reward + self.lam*numpy.max(self.Q[new_param]) - self.Q[self.old_param])
         
