@@ -146,7 +146,7 @@ class World(object):
         CANVAS.create_rectangle(SCREEN_WIDTH, 0, SCREEN_WIDTH + 300, SCREEN_HEIGHT, fill = "White")
         CANVAS.create_text(SCREEN_WIDTH + 15, 0, text = "Score: %d" % self.score, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+300, 0, text = "Top: %d" % self.highscore, anchor = NE)
-        CANVAS.create_text(SCREEN_WIDTH+150, 0, text = "Moving Average: %d" % self.average, anchor = N)
+        #CANVAS.create_text(SCREEN_WIDTH+150, 0, text = "Moving Average: %d" % self.average, anchor = N)
         CANVAS.create_text(SCREEN_WIDTH+15, 15, text = "ε: %.2f%%" % (100*Flapper.epsilon), anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+300, 15, text = "Iterations: %d" % self.ITERATIONS, anchor = NE)
         CANVAS.create_text(SCREEN_WIDTH+15, 45, text = "Keyboard Shortcuts:", anchor = NW)
