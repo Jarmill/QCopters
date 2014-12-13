@@ -103,7 +103,7 @@ class World(object):
         self.ITERATIONS = 0
         self.rainbow = False
         self.highscore = 0
-        self.averages = [0 for i in xrange(20)]
+        self.averages = [0 for i in xrange(100)]
         self.weight = 0.4
         self.average = 0
         self.score = 0
@@ -116,9 +116,10 @@ class World(object):
         if self.HUMAN:
             self.flappers = [Flapper()]
         self.walls = [Wall(n) for n in [DIST_BETWEEN_WALLS * k for k in range(0, NUM_WALLS)]]
-        self.averages.append(self.score)
-        self.averages.pop(0)
-        self.average = sum(self.averages)/20.0
+        self.averages[self.ITERATIONS % 100] = self.score
+        if self.ITERATIONS % 100 == 0:
+            self.sumOfHundred = sum(self.averages)
+            print self.sumOfHundred
         #exponential moving average
         #self.average = self.weight * self.score + (1-self.weight) * self.average
         self.time = 0
@@ -253,7 +254,7 @@ class Flapper(Rectangle):
     #   Horizontal Distance: 16
     #   Vertical Distance: 10
     #   Gap Distance: 10
-    #   State Space: 2*12*13*8*5 = 12.5k
+    #   State Space: 2*2*12*11*8*5 = 12.5k
     N_tap_div = 2
     N_acc_div = 2
     N_vel_div = 12
