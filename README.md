@@ -2,62 +2,10 @@ QCopters
 ========
 
 Reinforcement (Q) learning agent that learns to play SwingCopters. Final Project for AI (NU 4100)
+Swing Copters is the second popular and frustrating game created by Nguyễn Hà Đông (Dong Nguyen), on the heels of the wildly successful Flappy Bird. In Swing Copters, players control a tiny helicopter which moving upwards at a constant rate, and moving while constantly accelerating to either the left or right. Tapping the screen toggles the direction of the helicopter’s acceleration between left and right, but leaves the magnitude unchanged. The helicopter must pass through gaps and dodge swinging hammers. As a result, the helicopter has a somewhat parabolic path, as superimposed in red on the screenshot below. The game is scored based on the number of gaps successfully passed through. 
 
-There are three parts to this project, the game display, game programming, and AI learning.
+We re-implemented a simplified version of Swing Copters, with no hanging hammers, but with the accelerative physics largely unchanged, and similar scoring. Then, we wrote a Reinforcement Learning agent to learn to play our representation of Swing Copters. To play the game manually, press the “H” key on the keyboard to switch into Human Mode, in which you can toggle the direction with the spacebar. In Human Mode, no learning data is stored, since Q learning is unsupervised.
 
-Game Display:
-Pygame will be used as a framework to develop and program SwingCopters.
-Humans should be able to input and play SwingCopters, and as such, we will be rewriting and cloning the game.
-Bindings will also be provided in order for the AI agent to play without requiring the display.
+All work was done in Python 2.7.x. We used Tkinter as a front end to display the game. No logic or collision detection was done in Tkinter, so  we were able to turn off rendering in order to increase the speed for learning. This is accessible by pressing “V” on the keyboard. Numpy was used to facilitate multidimensional array computation and storage of the Q matrix.
 
-Game Programming:
-This entire project will use an object-oriented approach in order for objects to interact and behave properly.
-The programming section provides the physics of the game and keeping track of all relevant parameters
-
-AI learning:
-Every time step, the agent has a chance to perform an action (change direction of acceleration, henceforth referred to as "tap") or not
-Once the agent decides whether to tap or not, physics calculations are conducted and a new state is presented to the agent.
-Tapping instantaneously flips the sign of the acceleration, which only affects ax, since ay = 0.
-The tiebreaker is to not tap and do nothing, since that is the more common action.
-There is still a delay before the velocity changes, which the agent must be aware of.
-
-Reinforcement learning (Q learning) will be used to train the agent.
-
-The agent state (observable) is a subset of the game state.
-Agent state (5 fields) 
-    Vertical distance to next gate: 20
-    Horizontal distance to wall: 40
-        possibly a horizontal distance to middle of gap?
-        Or maybe horizontal distance to pair of pipes (0 if inside range of pipes, negative if left or positive if right)
-    Current horizontal velocity: 15 (This # should maybe depend on physics dt?)
-    Direction of horizontal acceleration: 2
-    Angle of hammers (?): 200
-    State space = 20*40*15*2*30 = 480k conservatively, can be reduced
-    
-Life (whether agent is living) does not have to be a state, instead it can be incorporated into the reward function.
-    
-The world state includes more parameters such as:
-    Gate positions (vertical spacing, horizontal gap size and positioning)
-    Angle of all hammers
-    Score (number of successful gates passed)
-    
-The reward function is:
-    +1 / time step while still alive (instantaneous)
-    -1000 for dying
-    Max iteration (survive 100 gates) rewards will not be given, since that would poison/skew the Q table.
-
-Other Q learning parameters:
-    discount factor lambda = 1
-    alpha = 0.7-0.8
-    might also add random chance to accelerate learning, might backfire though.
-
-Q learning is known for being very slow, and might take hours of computing time and power.
-We might try to simulate multiple agents at once iteratively,
-or have multiple cores communicating and solving the problem independently (multiprocessing module in Python).
-Communication/waiting overhead might be an issue.   
-    
-We might start by implementing flappy bird, which is simpler than SwingCopters.
-    
-Dependancies:
-    Pygame
-    Numpy (?)
+Run main.py to start the program. Numpy is required, and this program was intended for use in Python 2.7
