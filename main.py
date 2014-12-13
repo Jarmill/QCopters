@@ -148,6 +148,7 @@ class World(object):
         CANVAS.create_text(SCREEN_WIDTH+300, 0, text = "Top: %d" % self.highscore, anchor = NE)
         #CANVAS.create_text(SCREEN_WIDTH+150, 0, text = "Moving Average: %d" % self.average, anchor = N)
         CANVAS.create_text(SCREEN_WIDTH+15, 15, text = "ε: %.2f%%" % (100*Flapper.epsilon), anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+150, 15, text = "α: %.3f" % (Flapper.alpha), anchor = N)
         CANVAS.create_text(SCREEN_WIDTH+300, 15, text = "Iterations: %d" % self.ITERATIONS, anchor = NE)
         CANVAS.create_text(SCREEN_WIDTH+15, 45, text = "Keyboard Shortcuts:", anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+15, 60, text = "V: Render (Disable for learning)", anchor = NW)
