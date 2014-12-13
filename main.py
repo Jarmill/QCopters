@@ -150,15 +150,14 @@ class World(object):
         CANVAS.create_text(SCREEN_WIDTH+15, 15, text = "ε: %.2f%%" % (100*Flapper.epsilon), anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+300, 15, text = "Iterations: %d" % self.ITERATIONS, anchor = NE)
         CANVAS.create_text(SCREEN_WIDTH+15, 45, text = "Keyboard Shortcuts:", anchor = NW)
-        CANVAS.create_text(SCREEN_WIDTH+15, 60, text = "V: Render: %d (Disable for learning)" % W.render, anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 60, text = "V: Render (Disable for learning)", anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+15, 75, text = "S: Save Q-Matrix", anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+15, 90, text = "R: Restore Q-Matrix", anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+15, 105, text = "H: Human-Mode: %d (Space to switch direction)" % W.HUMAN, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+15, 120, text = "N: Number of Birds: %d" % W.numFlap, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+15, 135, text = "A: Rainbow Mode: %d" % W.rainbow, anchor = NW)
-        CANVAS.create_text(SCREEN_WIDTH+15, 150, text = "P: Pause: %d" % W.paused, anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 150, text = "P: Pause", anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH+15, 165, text = "Q: Exit", anchor = NW)
-        CANVAS.create_text(SCREEN_WIDTH+15, 180, text = "P: Pause: %d" % W.paused, anchor = NW)
 
         
     def moveTick(self):
