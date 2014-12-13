@@ -13,27 +13,26 @@ SCREEN_HEIGHT = NUM_WALLS*DIST_BETWEEN_WALLS
 WALL_WIDTH = SCREEN_WIDTH
 WALL_HEIGHT = 15
 GAP_WIDTH = 75
-DOWNWARDS_VELOCITY = 6
 FLAPPER_SIZE = 15
 FPS = 60.0
 TERMINAL_VELOCITY = 30
 ACCEL = 2
 COST = 100000
 
-COLORS = ["Blue", "Red", "Green", "Yellow", "Grey60", "Orange", "Navy", "Purple", "Pink"]
+COLORS = ["Blue", "Red", "Green", "Yellow", "Orange", "Navy", "Purple"]
 
 def main():
     global W #Tkinter made me do it. :(
     W = World()
     root = Tk()
     root.title("QCopters")
-    root.geometry("%dx%d"%(SCREEN_WIDTH,SCREEN_HEIGHT) )
+    root.geometry("%dx%d"%(SCREEN_WIDTH+600,SCREEN_HEIGHT))
     root.title("QCopters")
     global CANVAS
     W.render = True
     CANVAS = Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, highlightthickness = 0)
     CANVAS.pack()
-    #root.bind("<1>", mousePressed)
+    root.bind("<1>", mousePressed)
     root.bind("<2>", toggleRendering)
     root.bind("<s>", saveQ)
     root.bind("<r>", restoreQ)
@@ -44,6 +43,7 @@ def main():
     root.bind("<p>", pause)
     root.bind("<q>", exit)
     root.bind("<d>", debug)
+    root.bind("<n>", numFlappers)
     root.bind("<e>", epsilonZero)
     root.resizable(width=0, height = 0)
     timerFired()
@@ -55,16 +55,26 @@ def timerFired():
         W.moveTick()
         if W.render:
             W.renderFrame()
-    CANVAS.after(1, timerFired)
+    if not W.HUMAN:
+        CANVAS.after(1, timerFired)
+    else:
+        CANVAS.after(100, timerFired)
 
 def mousePressed(CANVAS):
-    W.flapper.flip()
+    if W.HUMAN:
+        W.flappers[0].flip()
 
 def epsilonZero(thunk):
     if Flapper.epsilon == 0:
         Flapper.epsilon = Flapper.epsilon_old
     else:
         Flapper.epsilon = 0
+
+def humanModeToggle(thunk):
+    W.HUMAN = not W.HUMAN
+
+def numFlappers(thunk):
+    W.numFlap =  (W.numFlap * 5) % 624
 
 def toggleRendering(CANVAS):
     W.render = not W.render
@@ -86,6 +96,9 @@ def rainbow(CANVAS):
     
 class World(object):
     def __init__(self):
+        self.numFlap = 1
+        self.DOWNWARDS_VELOCITY = 6
+        self.HUMAN = False
         self.ITERATIONS = 0
         self.rainbow = False
         self.highscore = 0
@@ -98,7 +111,9 @@ class World(object):
         self.reset()
         
     def reset(self):
-        self.flappers = [Flapper() for i in xrange(30)]
+        self.flappers = [Flapper() for i in range(self.numFlap)]
+        if self.HUMAN:
+            self.flappers = [Flapper()]
         self.walls = [Wall(n) for n in [DIST_BETWEEN_WALLS * k for k in range(0, NUM_WALLS)]]
         self.averages.append(self.score)
         self.averages.pop(0)
@@ -110,7 +125,7 @@ class World(object):
         self.ITERATIONS += 1
         Flapper.alpha *= Flapper.alpha_decay
         Flapper.epsilon *= Flapper.epsilon_decay
-        Flapper.epsilon_old *= Flapper.epsilon_decay       
+        Flapper.epsilon_old *= Flapper.epsilon_decay
         
     def incrementScore(self):
         self.score += 1
@@ -119,6 +134,8 @@ class World(object):
         
     def renderFrame(self):
         CANVAS.delete(ALL)
+        
+        CANVAS.create_rectangle(-1, 0, SCREEN_WIDTH, SCREEN_HEIGHT, fill = "Grey90")
         CANVAS.create_text(0, 0, text = "Score: %d" % self.score, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH, 0, text = "Top: %d" % self.highscore, anchor = NE)
         CANVAS.create_text(SCREEN_WIDTH/2, 0, text = "Avg: %d" % self.average, anchor = N)
@@ -141,14 +158,15 @@ class World(object):
             item.moveTick()
         for item in self.flappers:
             if not item.dead:
-                if item.act(self.getLowestWall(), True):
-                #if item.flappermode:
-                    item.flip()
+                if not self.HUMAN:
+                    if item.act(self.getLowestWall(), True):
+                        item.flip()
         for item in self.walls:
             item.moveTick()
             for bird in self.flappers:
                 if item.intersectsWith(bird) or bird.outOfBounds():
-                    bird.act(self.getLowestWall(), False)
+                    if not self.HUMAN:
+                        bird.act(self.getLowestWall(), False)
                     bird.dead = True
         if not False in [bird.dead for bird in self.flappers]:
             self.reset()
@@ -165,9 +183,6 @@ class World(object):
         
 def pause(event):
     W.paused = not W.paused
-
-def humanModeToggle(event):
-    W.flappermode = not W.flappermode
     
 class Sprite(object):
     def __init__(self, centerX, centerY):
@@ -347,7 +362,7 @@ class Wall(Sprite):
     
     
     def moveTick(self):
-        self.centerY += DOWNWARDS_VELOCITY
+        self.centerY += W.DOWNWARDS_VELOCITY
         if self.centerY - WALL_HEIGHT/2 > SCREEN_HEIGHT:
             self.centerY -= SCREEN_HEIGHT
             self.centerX = random.randint(GAP_WIDTH/2, SCREEN_WIDTH - GAP_WIDTH/2)
