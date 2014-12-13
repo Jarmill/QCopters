@@ -70,11 +70,14 @@ def toggleRendering(CANVAS):
     W.render = not W.render
     
 def saveQ(CANVAS):
-    W.flapper.saveQ()
-
+    print "Saved Q Matrix"
+    numpy.save("Q_matrix.npy", Flapper.Q)
+    numpy.savetxt("Q_text.txt", Flapper.Q.flatten())
+    
 def restoreQ(CANVAS):
-    W.flapper.restoreQ()
-
+    print "Restored Q Matrix"
+    Flapper.Q = numpy.load("Q_matrix.npy")
+    #pdb.set_trace()
 def debug(CANVAS):
     W.debug()
 
@@ -84,6 +87,7 @@ def rainbow(CANVAS):
 class World(object):
     def __init__(self):
         self.EPSILON = 3
+        self.ITERATIONS = 0
         self.rainbow = False
         self.highscore = 0
         self.averages = [0 for i in xrange(20)]
@@ -104,6 +108,7 @@ class World(object):
         #self.average = self.weight * self.score + (1-self.weight) * self.average
         self.time = 0
         self.score = 0
+        self.ITERATIONS += 1
         
     def incrementScore(self):
         self.score += 1
@@ -116,6 +121,7 @@ class World(object):
         CANVAS.create_text(SCREEN_WIDTH, 0, text = "Top: %d" % self.highscore, anchor = NE)
         CANVAS.create_text(SCREEN_WIDTH/2, 0, text = "Avg: %d" % self.average, anchor = N)
         CANVAS.create_text(SCREEN_WIDTH/2, 30, text = "ε: %d%%" % self.EPSILON, anchor = N)
+        CANVAS.create_text(0, 30, text = "Iterations: %d" % self.ITERATIONS, anchor = NW)
         self.color = "black"
         for item in self.walls:
             item.render()
@@ -314,16 +320,6 @@ class Flapper(Rectangle):
         
     def outOfBounds(self):
         return not (FLAPPER_SIZE / 2 < self.centerX  < SCREEN_WIDTH - (FLAPPER_SIZE/2))
-    
-    def saveQ(self):
-        print "SAVED!"
-        numpy.save("Q_matrix.npy", self.Q)
-        numpy.savetxt("Q_text.txt", self.Q.flatten())
-        
-    def restoreQ(self):
-        print "RESTORED!"
-        self.Q = numpy.load("Q_matrix.npy")
-        #pdb.set_trace()
 
 class Wall(Sprite):
     def __init__(self, y):
