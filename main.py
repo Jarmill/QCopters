@@ -26,11 +26,11 @@ def main():
     W = World()
     root = Tk()
     root.title("QCopters")
-    root.geometry("%dx%d"%(SCREEN_WIDTH+600,SCREEN_HEIGHT))
+    root.geometry("%dx%d"%(SCREEN_WIDTH+300,SCREEN_HEIGHT))
     root.title("QCopters")
     global CANVAS
     W.render = True
-    CANVAS = Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, highlightthickness = 0)
+    CANVAS = Canvas(root, width = SCREEN_WIDTH + 300, height = SCREEN_HEIGHT, highlightthickness = 0)
     CANVAS.pack()
     root.bind("<1>", mousePressed)
     root.bind("<2>", toggleRendering)
@@ -39,7 +39,7 @@ def main():
     root.bind("<a>", rainbow)
     root.bind("<h>", humanModeToggle)
     root.bind("<v>", toggleRendering)
-    #root.bind("<space>", mousePressed)
+    root.bind("<space>", mousePressed)
     root.bind("<p>", pause)
     root.bind("<q>", exit)
     root.bind("<d>", debug)
@@ -75,6 +75,7 @@ def humanModeToggle(thunk):
 
 def numFlappers(thunk):
     W.numFlap =  (W.numFlap * 5) % 624
+    W.reset()
 
 def toggleRendering(CANVAS):
     W.render = not W.render
@@ -136,17 +137,29 @@ class World(object):
         CANVAS.delete(ALL)
         
         CANVAS.create_rectangle(-1, 0, SCREEN_WIDTH, SCREEN_HEIGHT, fill = "Grey90")
-        CANVAS.create_text(0, 0, text = "Score: %d" % self.score, anchor = NW)
-        CANVAS.create_text(SCREEN_WIDTH, 0, text = "Top: %d" % self.highscore, anchor = NE)
-        CANVAS.create_text(SCREEN_WIDTH/2, 0, text = "Avg: %d" % self.average, anchor = N)
-        CANVAS.create_text(SCREEN_WIDTH/2, 30, text = "ε: %.2f%%" % (100*Flapper.epsilon), anchor = N)
-        CANVAS.create_text(0, 30, text = "Iterations: %d" % self.ITERATIONS, anchor = NW)
         self.color = "black"
         for item in self.walls:
             item.render()
         for item in self.flappers:
             if not item.dead:
                 item.render()
+        CANVAS.create_rectangle(SCREEN_WIDTH, 0, SCREEN_WIDTH + 300, SCREEN_HEIGHT, fill = "White")
+        CANVAS.create_text(SCREEN_WIDTH + 15, 0, text = "Score: %d" % self.score, anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+300, 0, text = "Top: %d" % self.highscore, anchor = NE)
+        CANVAS.create_text(SCREEN_WIDTH+150, 0, text = "Moving Average: %d" % self.average, anchor = N)
+        CANVAS.create_text(SCREEN_WIDTH+15, 15, text = "ε: %.2f%%" % (100*Flapper.epsilon), anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+300, 15, text = "Iterations: %d" % self.ITERATIONS, anchor = NE)
+        CANVAS.create_text(SCREEN_WIDTH+15, 45, text = "Keyboard Shortcuts:", anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 60, text = "V: Render: %d (Disable for learning)" % W.render, anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 75, text = "S: Save Q-Matrix", anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 90, text = "R: Restore Q-Matrix", anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 105, text = "H: Human-Mode: %d (Space to switch direction)" % W.HUMAN, anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 120, text = "N: Number of Birds: %d" % W.numFlap, anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 135, text = "A: Rainbow Mode: %d" % W.rainbow, anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 150, text = "P: Pause: %d" % W.paused, anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 165, text = "Q: Exit", anchor = NW)
+        CANVAS.create_text(SCREEN_WIDTH+15, 180, text = "P: Pause: %d" % W.paused, anchor = NW)
+
         
     def moveTick(self):
         self.time += 1
