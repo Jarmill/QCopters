@@ -61,10 +61,10 @@ def mousePressed(CANVAS):
     W.flapper.flip()
 
 def epsilonZero(thunk):
-    if W.EPSILON == 0:
-        W.EPSILON = 3
+    if Flapper.epsilon == 0:
+        Flapper.epsilon = Flapper.epsilon_old
     else:
-        W.EPSILON = 0
+        Flapper.epsilon = 0
 
 def toggleRendering(CANVAS):
     W.render = not W.render
@@ -86,7 +86,6 @@ def rainbow(CANVAS):
     
 class World(object):
     def __init__(self):
-        self.EPSILON = 3
         self.ITERATIONS = 0
         self.rainbow = False
         self.highscore = 0
@@ -109,6 +108,9 @@ class World(object):
         self.time = 0
         self.score = 0
         self.ITERATIONS += 1
+        Flapper.alpha *= Flapper.alpha_decay
+        Flapper.epsilon *= Flapper.epsilon_decay
+        Flapper.epsilon_old *= Flapper.epsilon_decay       
         
     def incrementScore(self):
         self.score += 1
@@ -120,7 +122,7 @@ class World(object):
         CANVAS.create_text(0, 0, text = "Score: %d" % self.score, anchor = NW)
         CANVAS.create_text(SCREEN_WIDTH, 0, text = "Top: %d" % self.highscore, anchor = NE)
         CANVAS.create_text(SCREEN_WIDTH/2, 0, text = "Avg: %d" % self.average, anchor = N)
-        CANVAS.create_text(SCREEN_WIDTH/2, 30, text = "ε: %d%%" % self.EPSILON, anchor = N)
+        CANVAS.create_text(SCREEN_WIDTH/2, 30, text = "ε: %.2f%%" % (100*Flapper.epsilon), anchor = N)
         CANVAS.create_text(0, 30, text = "Iterations: %d" % self.ITERATIONS, anchor = NW)
         self.color = "black"
         for item in self.walls:
@@ -251,6 +253,15 @@ class Flapper(Rectangle):
     #learning parameters
     alpha = 0.6 # learning rate
     lam = 0.98 #discount rate (permanent memory)
+    epsilon = 0.03
+    epsilon_old = epsilon
+    
+    #simulated annealing on learning parameters
+    #After 10000 iterations, alpha goes from 0.6 to 0.5
+    alpha_decay = 0.9999817680105253
+    #After 1000 iterations, epsilon goes from 0.03 to 0.02
+    epsilon_decay = 0.99959461708176
+    
     def __init__(self):
         self.accel = random.choice([-ACCEL, ACCEL])
         self.centerX = random.randint(3*FLAPPER_SIZE, SCREEN_WIDTH - 3*FLAPPER_SIZE)
@@ -296,14 +307,13 @@ class Flapper(Rectangle):
         #pdb.set_trace()
         new_param = ([0,1], acc_index, vel_index, h_index, v_index, x_index)
         #tap = self.Q[:, new_param].argmax()
-        if random.randint(0,100) > W.EPSILON:
+        if random.random() > self.epsilon:
             tap = self.Q[new_param].argmax()
         else:
             tap = random.choice([1, 0])
         #update Q matrix
         if self.old_param != []:
             reward = (SCREEN_WIDTH - abs(self.centerX - near_wall.centerX)) if life else -COST
-            #self.Q[self.old_param] += alpha * (reward + lam*np.max(self.Q[:, new_param]) - self.Q[self.old_param])
             self.Q[self.old_param] += self.alpha * (reward + self.lam*numpy.max(self.Q[new_param]) - self.Q[self.old_param])
         
         self.old_param = (tap, acc_index, vel_index, h_index, v_index, x_index)
